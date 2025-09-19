@@ -1,9 +1,10 @@
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格字体转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.6.6
-// @description  Claude 风格字体与主题变量；统一侧栏与正文背景；支持一键开关、修复刷新后按钮缺失（更大&更粗字体）。v1.6.6：移除 input-gradient 白色过渡层，输入区与正文风格完全统一。
+// @version      1.6.7
+// @description  Claude 风格字体与主题变量；统一侧栏与正文背景；支持一键开关、修复刷新后按钮缺失（更大&更粗字体）。v1.6.7：新增脚本图标。
 // @author       Claude Assistant
+// @icon         https://www.gstatic.com/lamda/images/gemini_sparkle_4g_512_lt_f94943af3be039176192d.png
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
 // @grant        GM_setValue
@@ -216,63 +217,67 @@ svg, img, .mdc-*, [class*="mdc-"], [data-*="button"] {
 :is(aside, nav)[class*="sidebar" i] hr, [aria-label*="sidebar" i] hr { border-color: var(--sidebar-border) !important; opacity: .8 !important; }
 `;
 
-  // ========= 正文区域背景补丁 (v1.6.6：移除 input-gradient 白色过渡) =========
+  // ========= 正文区域背景补丁 (v1.6.6 最终整合) =========
   const MAIN_CONTENT_CSS = `
-/* 整体对话区域的背景保持为主题底色 */
-.chat-container { background-color: var(--background) !important; }
-
-/* 输入区容器：透明化，不破坏布局 */
-input-container, [class*="input-container" i] {
-  background: transparent !important;
-  background-color: transparent !important;
-  box-shadow: none !important;
-  border-color: transparent !important;
+/* 1. 设置整体对话区域的背景色 */
+.chat-container {
+    background-color: var(--background) !important;
 }
 
-/* 富文本输入根层透明化（含可能的包裹层） */
-rich-textarea, rich-textarea > div, [contenteditable="true"] {
-  background: transparent !important;
-  background-color: transparent !important;
-  box-shadow: none !important;
-}
-
-/* —— 核心修正：移除白色过渡层 —— */
-/* 这条白带完全由 ::before 渐变绘制，清空它即可 */
-.input-gradient::before,
-[class*="input-gradient" i]::before,
-input-gradient::before {
-  content: none !important;
-  background: none !important;
-  background-image: none !important;
-}
-
-/* 保险：容器本体也不叠任何背景/阴影/遮罩 */
-.input-gradient,
-[class*="input-gradient" i],
-input-gradient {
-  background: transparent !important;
-  background-image: none !important;
-  box-shadow: none !important;
-  filter: none !important;
-  -webkit-mask-image: none !important;
-  mask-image: none !important;
-}
-
-/* 进一步移除可能存在的 after 叠层 */
-.input-gradient::after,
-[class*="input-gradient" i]::after,
-input-gradient::after {
-  content: none !important;
-}
-
-/* 对话气泡透明，保留你“无边界感”的视觉 */
+/* 2. (重要) 移除对话气泡的独立背景，使其与上层融合 */
 model-response,
 user-request,
 response-container,
 [class*="response-container"] {
-  background: transparent !important;
-  background-color: transparent !important;
-  box-shadow: none !important;
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+
+/* 3. 移除底部输入框区域的独立背景 */
+input-container,
+[class*="input-container" i] {
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+    border-color: transparent !important;
+}
+
+/* 4. 输入框本身保持透明 */
+rich-textarea,
+rich-textarea > div,
+[contenteditable="true"] {
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+
+/* 5. 移除 input-gradient 渐变伪元素（白色过渡盒子） */
+.input-gradient::before,
+[class*="input-gradient" i]::before,
+input-gradient::before {
+    content: none !important;
+    background: none !important;
+    background-image: none !important;
+}
+
+/* 6. 保险：input-gradient 容器本体透明化 */
+.input-gradient,
+[class*="input-gradient" i],
+input-gradient {
+    background: transparent !important;
+    background-image: none !important;
+    box-shadow: none !important;
+    filter: none !important;
+    -webkit-mask-image: none !important;
+    mask-image: none !important;
+}
+
+/* 7. 移除其它可能的 before/after 叠层 */
+.input-gradient::after,
+[class*="input-gradient" i]::after,
+input-gradient::after {
+    content: none !important;
 }
 `;
 
@@ -372,7 +377,9 @@ response-container,
       white-space: nowrap !important; line-height: 1.3 !important; pointer-events: none !important;
     `;
     document.body.appendChild(toast);
-    requestAnimationFrame(() => { toast.style.opacity = '1'; });
+    requestAnimationFrame(() => {
+      toast.style.opacity = '1';
+    });
     setTimeout(() => {
       toast.style.opacity = '0';
       setTimeout(() => toast.remove(), 260);
@@ -381,7 +388,9 @@ response-container,
 
   // ========= 菜单 =========
   function registerMenuCommand() {
-    if (menuCommandId) GM_unregisterMenuCommand(menuCommandId);
+    if (menuCommandId) {
+      GM_unregisterMenuCommand(menuCommandId);
+    }
     menuCommandId = GM_registerMenuCommand(
       isEnabled ? '❌ 关闭 Claude 字体与主题色' : '✅ 启用 Claude 字体与主题色',
       toggleFont,
@@ -410,10 +419,10 @@ response-container,
       (document.head || document.documentElement).appendChild(sidebarStyleElement);
     }
     if (!mainContentStyleElement) {
-      mainContentStyleElement = document.createElement('style');
-      mainContentStyleElement.id = 'claude-main-content-style';
-      mainContentStyleElement.textContent = MAIN_CONTENT_CSS;
-      (document.head || document.documentElement).appendChild(mainContentStyleElement);
+        mainContentStyleElement = document.createElement('style');
+        mainContentStyleElement.id = 'claude-main-content-style';
+        mainContentStyleElement.textContent = MAIN_CONTENT_CSS;
+        (document.head || document.documentElement).appendChild(mainContentStyleElement);
     }
     console.log('✅ 主题、字体、侧栏与正文背景已应用');
   }
@@ -506,6 +515,6 @@ response-container,
     enable: () => { if (!isEnabled) toggleFont(); },
     disable: () => { if (isEnabled) toggleFont(); },
     status: () => isEnabled,
-    version: '1.6.6'
+    version: '1.6.7'
   };
 })();
