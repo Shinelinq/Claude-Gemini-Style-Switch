@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格字体转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.6.5
-// @description  Claude 风格字体与主题变量；统一侧栏与正文背景 (v1.6.5)；支持一键开关、修复刷新后按钮缺失（更大&更粗字体）
+// @version      1.6.6
+// @description  Claude 风格字体与主题变量；统一侧栏与正文背景 (v1.6.6 修复输入框背景与渐变)；支持一键开关（更大&更粗字体）
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -215,29 +215,41 @@ svg, img, .mdc-*, [class*="mdc-"], [data-*="button"] {
 :is(aside, nav)[class*="sidebar" i] hr, [aria-label*="sidebar" i] hr { border-color: var(--sidebar-border) !important; opacity: .8 !important; }
 `;
 
-  // ========= 正文区域背景补丁 (v1.6.5 核心更新) =========
+  // ========= 正文区域背景补丁 (v1.6.6 核心更新) =========
   const MAIN_CONTENT_CSS = `
 /* 1. 设置整体对话区域的背景色 */
-.chat-container {
+.chat-container, .main-content {
     background-color: var(--background) !important;
 }
 
-/* 2. 移除底部输入框区域的独立背景，使其与上层融合 */
-input-container,
-/* 同时处理输入框本身可能存在的背景 */
-rich-textarea > div {
-    background: transparent !important;
-    background-color: transparent !important;
-}
-
-/* 3. 移除对话气泡的独立背景和阴影，实现 Claude 的无边界感 */
+/* 2. 移除对话气泡的独立背景和阴影 */
 model-response,
 user-request,
 response-container,
-[class*="response-container"] { /* 通用规则，以防万一 */
+[class*="response-container"] {
     background: transparent !important;
     background-color: transparent !important;
     box-shadow: none !important;
+}
+
+/* 3. 移除底部输入框区域的独立背景 (v1.6.6 强化) */
+.input-area,
+.input-container,
+prompt-form,
+.input-area-container,
+.chat-footer,
+[class*="input-container-"],
+rich-textarea,
+rich-textarea > div {
+    background: transparent !important;
+    background-color: transparent !important;
+    border-top: none !important;
+    box-shadow: none !important;
+}
+
+/* 4. (v1.6.6 修正) 移除聊天内容底部的渐变遮罩 */
+.input-gradient {
+    display: none !important;
 }
 `;
 
@@ -476,6 +488,6 @@ response-container,
     enable: () => { if (!isEnabled) toggleFont(); },
     disable: () => { if (isEnabled) toggleFont(); },
     status: () => isEnabled,
-    version: '1.6.5'
+    version: '1.6.6'
   };
 })();
