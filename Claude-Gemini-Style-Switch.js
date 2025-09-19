@@ -2,7 +2,7 @@
 // @name         Gemini 仿 Claude 风格字体转换插件
 // @namespace    https://github.com/XXX/
 // @version      1.6.5
-// @description  Claude 风格字体与主题变量 + 侧栏与正文背景统一；支持一键开关、修复刷新后按钮缺失（更大&更粗字体）
+// @description  Claude 风格字体与主题变量；统一侧栏与正文背景 (v1.6.5)；支持一键开关、修复刷新后按钮缺失（更大&更粗字体）
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -215,7 +215,7 @@ svg, img, .mdc-*, [class*="mdc-"], [data-*="button"] {
 :is(aside, nav)[class*="sidebar" i] hr, [aria-label*="sidebar" i] hr { border-color: var(--sidebar-border) !important; opacity: .8 !important; }
 `;
 
-  // ========= 正文区域背景补丁 (增强版) =========
+  // ========= 正文区域背景补丁 (v1.6.5 核心更新) =========
   const MAIN_CONTENT_CSS = `
 /* 1. 设置整体对话区域的背景色 */
 .chat-container {
@@ -476,6 +476,6 @@ response-container,
     enable: () => { if (!isEnabled) toggleFont(); },
     disable: () => { if (isEnabled) toggleFont(); },
     status: () => isEnabled,
-    version: '1.6.8'
+    version: '1.6.5'
   };
 })();
