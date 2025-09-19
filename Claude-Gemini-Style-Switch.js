@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格字体转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.6.5
-// @description  Claude 风格字体与主题变量；统一侧栏与正文背景 (v1.6.5)；支持一键开关、修复刷新后按钮缺失（更大&更粗字体）
+// @version      1.6.6
+// @description  Claude 风格字体与主题变量；统一侧栏与正文背景；支持一键开关、修复刷新后按钮缺失（更大&更粗字体）。v1.6.6：移除 input-gradient 白色过渡层，输入区与正文风格完全统一。
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -12,6 +12,7 @@
 // @grant        GM_unregisterMenuCommand
 // @run-at       document-start
 // @license      MIT
+// @noframes
 // ==/UserScript==
 
 (function () {
@@ -156,7 +157,7 @@ input[type="password"], input[type="search"], textarea, select, option {
   text-rendering: optimizeLegibility;
 }
 h1 { line-height: 1.25 !important; font-weight: 700 !important; }
-h2 { line-height: 1.28 !important; font-weight: 650 !important; }
+h2 { line-height: 1.28 !important; font-weight: 600 !important; }
 h3 { line-height: 1.30 !important; font-weight: 600 !important; }
 h4, h5, h6 { line-height: 1.35 !important; font-weight: 600 !important; }
 p, li { font-size: calc(var(--font-size-base) * 1.02) !important; }
@@ -173,7 +174,7 @@ svg, img, .mdc-*, [class*="mdc-"], [data-*="button"] {
   font-family: inherit !important;
 }
 [lang="zh"], [lang="zh-CN"], [lang="zh-TW"] {
-  font-family: ${CONFIG.claudeFont}, "Microsoft YaHei", "微软雅黑", "SimSun", "宋体" !important;
+  font-family: ${CONFIG.claudeFont}, "PingFang SC","Hiragino Sans GB","Source Han Sans SC","Microsoft YaHei","Noto Sans CJK SC","SimSun","Songti SC", sans-serif !important;
 }
 `;
 
@@ -215,32 +216,65 @@ svg, img, .mdc-*, [class*="mdc-"], [data-*="button"] {
 :is(aside, nav)[class*="sidebar" i] hr, [aria-label*="sidebar" i] hr { border-color: var(--sidebar-border) !important; opacity: .8 !important; }
 `;
 
-  // ========= 正文区域背景补丁 (v1.6.5 核心更新) =========
+  // ========= 正文区域背景补丁 (v1.6.6：移除 input-gradient 白色过渡) =========
   const MAIN_CONTENT_CSS = `
-/* 1. 设置整体对话区域的背景色 */
-.chat-container {
-    background-color: var(--background) !important;
+/* 整体对话区域的背景保持为主题底色 */
+.chat-container { background-color: var(--background) !important; }
+
+/* 输入区容器：透明化，不破坏布局 */
+input-container, [class*="input-container" i] {
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
+  border-color: transparent !important;
 }
 
-/* 2. 移除底部输入框区域的独立背景，使其与上层融合 */
-input-container,
-/* 同时处理输入框本身可能存在的背景 */
-rich-textarea > div {
-    background: transparent !important;
-    background-color: transparent !important;
+/* 富文本输入根层透明化（含可能的包裹层） */
+rich-textarea, rich-textarea > div, [contenteditable="true"] {
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
 }
 
-/* 3. 移除对话气泡的独立背景和阴影，实现 Claude 的无边界感 */
+/* —— 核心修正：移除白色过渡层 —— */
+/* 这条白带完全由 ::before 渐变绘制，清空它即可 */
+.input-gradient::before,
+[class*="input-gradient" i]::before,
+input-gradient::before {
+  content: none !important;
+  background: none !important;
+  background-image: none !important;
+}
+
+/* 保险：容器本体也不叠任何背景/阴影/遮罩 */
+.input-gradient,
+[class*="input-gradient" i],
+input-gradient {
+  background: transparent !important;
+  background-image: none !important;
+  box-shadow: none !important;
+  filter: none !important;
+  -webkit-mask-image: none !important;
+  mask-image: none !important;
+}
+
+/* 进一步移除可能存在的 after 叠层 */
+.input-gradient::after,
+[class*="input-gradient" i]::after,
+input-gradient::after {
+  content: none !important;
+}
+
+/* 对话气泡透明，保留你“无边界感”的视觉 */
 model-response,
 user-request,
 response-container,
-[class*="response-container"] { /* 通用规则，以防万一 */
-    background: transparent !important;
-    background-color: transparent !important;
-    box-shadow: none !important;
+[class*="response-container"] {
+  background: transparent !important;
+  background-color: transparent !important;
+  box-shadow: none !important;
 }
 `;
-
 
   // ========= 按钮样式 =========
   const buttonCSS = `
@@ -338,9 +372,7 @@ response-container,
       white-space: nowrap !important; line-height: 1.3 !important; pointer-events: none !important;
     `;
     document.body.appendChild(toast);
-    requestAnimationFrame(() => {
-      toast.style.opacity = '1';
-    });
+    requestAnimationFrame(() => { toast.style.opacity = '1'; });
     setTimeout(() => {
       toast.style.opacity = '0';
       setTimeout(() => toast.remove(), 260);
@@ -349,9 +381,7 @@ response-container,
 
   // ========= 菜单 =========
   function registerMenuCommand() {
-    if (menuCommandId) {
-      GM_unregisterMenuCommand(menuCommandId);
-    }
+    if (menuCommandId) GM_unregisterMenuCommand(menuCommandId);
     menuCommandId = GM_registerMenuCommand(
       isEnabled ? '❌ 关闭 Claude 字体与主题色' : '✅ 启用 Claude 字体与主题色',
       toggleFont,
@@ -380,10 +410,10 @@ response-container,
       (document.head || document.documentElement).appendChild(sidebarStyleElement);
     }
     if (!mainContentStyleElement) {
-        mainContentStyleElement = document.createElement('style');
-        mainContentStyleElement.id = 'claude-main-content-style';
-        mainContentStyleElement.textContent = MAIN_CONTENT_CSS;
-        (document.head || document.documentElement).appendChild(mainContentStyleElement);
+      mainContentStyleElement = document.createElement('style');
+      mainContentStyleElement.id = 'claude-main-content-style';
+      mainContentStyleElement.textContent = MAIN_CONTENT_CSS;
+      (document.head || document.documentElement).appendChild(mainContentStyleElement);
     }
     console.log('✅ 主题、字体、侧栏与正文背景已应用');
   }
@@ -476,6 +506,6 @@ response-container,
     enable: () => { if (!isEnabled) toggleFont(); },
     disable: () => { if (isEnabled) toggleFont(); },
     status: () => isEnabled,
-    version: '1.6.5'
+    version: '1.6.6'
   };
 })();
