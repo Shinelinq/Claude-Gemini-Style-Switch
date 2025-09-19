@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Gemini 仿 Claude 风格字体转换插件 1.6.0
+// @name         Gemini 仿 Claude 风格字体转换插件 1.6.2
 // @namespace    https://github.com/XXX/
-// @version      1.6.0
-// @description  为 Gemini 网页添加 Claude 风格字体与主题变量，支持一键开关与欢迎词主题色
+// @version      1.6.2
+// @description  为 Gemini 网页添加 Claude 风格字体与主题变量，支持一键开关与欢迎词主题色（修复刷新后按钮缺失 & 更大更粗字体）
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -16,10 +16,10 @@
 // @downloadURL
 // ==/UserScript==
 
-(function() {
+(function () {
   'use strict';
 
-  // ========= Claude 主题变量（来自你提供的样式） =========
+  // ========= Claude 主题变量（含字号/字重控制） =========
   const THEME_CSS = `
 :root {
   --background: oklch(0.9818 0.0054 95.0986);
@@ -68,6 +68,11 @@
   --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
   --tracking-normal: 0em;
   --spacing: 0.25rem;
+
+  /* —— 新增：字号与字重控制 —— */
+  --font-size-base: 16.5px;   /* 调到 17px 会更大一点 */
+  --font-weight-text: 500;    /* 400 常规，500 微加粗 */
+  --font-weight-strong: 600;  /* strong/b 字重 */
 }
 .dark {
   --background: oklch(0.2679 0.0036 106.6427);
@@ -103,40 +108,54 @@
   --sidebar-border: oklch(0.9401 0 0);
   --sidebar-ring: oklch(0.7731 0 0);
 }
-  `;
+`;
 
-  // ========= 配置：改为使用主题变量 =========
+  // ========= 配置 =========
   const CONFIG = {
     claudeFont: 'var(--font-serif)',
     codeFont: 'var(--font-mono)',
     claudeThemeColor: 'var(--primary)',
-    lineHeight: '1.7',
+    lineHeight: '1.72',
     storageKey: 'gemini_claude_font_enabled',
   };
 
   // ========= 状态 =========
   let isEnabled = GM_getValue(CONFIG.storageKey, false);
-  let themeElement = null;     // 主题变量 <style>
-  let styleElement = null;     // 字体/结构 <style>
-  let btnStyleElement = null;  // 按钮 CSS <style>
+  let themeElement = null;
+  let styleElement = null;
+  let btnStyleElement = null;
   let toggleButton = null;
   let menuCommandId = null;
   let welcomeObserver = null;
 
-  // ========= 主样式（使用主题变量） =========
+  // ========= 主样式 =========
   const claudeFontCSS = `
-/* 字体替换（保留你的排除策略） */
+/* 全站基础文字（更大、更粗） */
 body, p, div, span, article, section, h1, h2, h3, h4, h5, h6,
 main, aside, header, footer, nav, ul, li, ol, dl, dt, dd,
 table, thead, tbody, tr, td, th, caption,
 form, fieldset, legend, label, input[type="text"], input[type="email"],
 input[type="password"], input[type="search"], textarea, select, option {
   font-family: ${CONFIG.claudeFont} !important;
+  font-size: var(--font-size-base) !important;
+  font-weight: var(--font-weight-text) !important;
   line-height: ${CONFIG.lineHeight} !important;
   color: var(--foreground);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
-h1, h2, h3, h4, h5, h6 { line-height: 1.3 !important; }
+/* 标题：更紧凑行高 & 合理字重 */
+h1 { line-height: 1.25 !important; font-weight: 700 !important; }
+h2 { line-height: 1.28 !important; font-weight: 650 !important; }
+h3 { line-height: 1.30 !important; font-weight: 600 !important; }
+h4, h5, h6 { line-height: 1.35 !important; font-weight: 600 !important; }
+
+/* 段落/列表微增字号，提升可读性 */
+p, li { font-size: calc(var(--font-size-base) * 1.02) !important; }
+
+/* strong/b 更清晰 */
+strong, b { font-weight: var(--font-weight-strong) !important; }
 
 /* 代码保持等宽 */
 code, pre, .code, [class*="code"], [class*="mono"],
@@ -166,9 +185,9 @@ div[class*="greeting"], span[class*="greeting"],
 h1[class*="greeting"], h2[class*="greeting"], h3[class*="greeting"],
 [data-testid*="greeting"], [class*="welcome"], [class*="hello"],
 main h1, main h2, main h3, [role="main"] h1, [role="main"] h2, [role="main"] h3 { }
-  `;
+`;
 
-  // ========= 按钮样式（使用主题变量） =========
+  // ========= 按钮样式 =========
   const buttonCSS = `
 #claude-font-toggle {
   position: fixed !important;
@@ -214,7 +233,7 @@ main h1, main h2, main h3, [role="main"] h1, [role="main"] h2, [role="main"] h3 
 }
 `;
 
-  // ========= 欢迎词检测与上色（打数据标） =========
+  // ========= 欢迎词检测与上色 =========
   function applyWelcomeTextColor() {
     const welcomePatterns = [
       /你好[，,\s]*([^\s，,]+)/i, /您好[，,\s]*([^\s，,]+)/i,
@@ -262,7 +281,6 @@ main h1, main h2, main h3, [role="main"] h1, [role="main"] h2, [role="main"] h3 
         if (el && !el.dataset.claudeWelcomeColored) {
           el.style.setProperty('color', CONFIG.claudeThemeColor, 'important');
           el.dataset.claudeWelcomeColored = '1';
-          // 记录用于回滚
         }
       }
     }
@@ -299,34 +317,40 @@ main h1, main h2, main h3, [role="main"] h1, [role="main"] h2, [role="main"] h3 
     });
   }
 
-  // ========= 观察欢迎词（SPA 变动） =========
+  // ========= 观察欢迎词（等待 body 就绪后再绑定） =========
   function startWelcomeTextObserver() {
     if (!isEnabled) return null;
-    const debounced = (() => {
-      let t = null;
-      return () => {
-        clearTimeout(t);
-        t = setTimeout(applyWelcomeTextColor, 120);
-      };
-    })();
 
-    const obs = new MutationObserver(muts => {
-      for (const m of muts) {
-        if (m.type === 'childList' || m.type === 'characterData') {
-          debounced();
-          break;
-        }
+    const start = () => {
+      if (!document.body) return;
+      const debounced = (() => {
+        let t = null;
+        return () => { clearTimeout(t); t = setTimeout(applyWelcomeTextColor, 120); };
+      })();
+      try {
+        const obs = new MutationObserver(muts => {
+          for (const m of muts) {
+            if (m.type === 'childList' || m.type === 'characterData') { debounced(); break; }
+          }
+        });
+        obs.observe(document.body, { childList: true, subtree: true, characterData: true });
+        welcomeObserver = obs;
+        setTimeout(applyWelcomeTextColor, 120); // 初次跑一次
+      } catch (e) {
+        console.warn('[Claude Font] Observer init failed:', e);
       }
-    });
-    obs.observe(document.body, { childList: true, subtree: true, characterData: true });
-    return obs;
+    };
+
+    if (document.body) start();
+    else document.addEventListener('DOMContentLoaded', start, { once: true });
+
+    return welcomeObserver;
   }
 
   // ========= 按钮/Toast =========
   function createToggleButton() {
     if (toggleButton) return;
 
-    // 注入按钮样式（单独 <style>，便于移除）
     if (!btnStyleElement) {
       btnStyleElement = document.createElement('style');
       btnStyleElement.id = 'claude-font-button-style';
@@ -347,6 +371,9 @@ main h1, main h2, main h3, [role="main"] h1, [role="main"] h2, [role="main"] h3 
       }, 1000);
     });
     toggleButton.addEventListener('mouseleave', () => clearTimeout(hoverTimeout));
+
+    // 在按钮创建时，若开启则确保 Observer 也已绑定
+    if (isEnabled && !welcomeObserver) startWelcomeTextObserver();
 
     console.log('✅ 切换按钮已创建');
   }
@@ -400,9 +427,7 @@ main h1, main h2, main h3, [role="main"] h1, [role="main"] h2, [role="main"] h3 
 
   // ========= 菜单 =========
   function registerMenuCommand() {
-    if (menuCommandId) {
-      GM_unregisterMenuCommand(menuCommandId);
-    }
+    if (menuCommandId) GM_unregisterMenuCommand(menuCommandId);
     menuCommandId = GM_registerMenuCommand(
       isEnabled ? '❌ 关闭 Claude 字体与主题色' : '✅ 启用 Claude 字体与主题色',
       toggleFont,
@@ -412,40 +437,27 @@ main h1, main h2, main h3, [role="main"] h1, [role="main"] h2, [role="main"] h3 
 
   // ========= 应用/移除样式 =========
   function applyClaudeFont() {
-    if (styleElement) return;
-
-    // 注入主题变量
     if (!themeElement) {
       themeElement = document.createElement('style');
       themeElement.id = 'claude-theme-style';
       themeElement.textContent = THEME_CSS;
       (document.head || document.documentElement).appendChild(themeElement);
     }
-
-    // 注入主样式
-    styleElement = document.createElement('style');
-    styleElement.id = 'claude-font-style';
-    styleElement.textContent = claudeFontCSS;
-    (document.head || document.documentElement).appendChild(styleElement);
-
-    // 欢迎词上色
+    if (!styleElement) {
+      styleElement = document.createElement('style');
+      styleElement.id = 'claude-font-style';
+      styleElement.textContent = claudeFontCSS;
+      (document.head || document.documentElement).appendChild(styleElement);
+    }
     setTimeout(applyWelcomeTextColor, 300);
     console.log('✅ 主题与 Claude 字体已应用');
   }
 
   function removeClaudeFont() {
-    if (styleElement) {
-      styleElement.remove();
-      styleElement = null;
-    }
-    // 移除主题变量（避免对页面其他元素产生长期影响）
-    if (themeElement) {
-      themeElement.remove();
-      themeElement = null;
-    }
-    // 恢复欢迎词颜色
+    if (styleElement) { styleElement.remove(); styleElement = null; }
+    if (themeElement) { themeElement.remove(); themeElement = null; }
+    if (welcomeObserver) { welcomeObserver.disconnect(); welcomeObserver = null; }
     restoreWelcomeTextColor();
-
     console.log('❌ Claude 字体和主题色已移除');
   }
 
@@ -456,10 +468,9 @@ main h1, main h2, main h3, [role="main"] h1, [role="main"] h2, [role="main"] h3 
 
     if (isEnabled) {
       applyClaudeFont();
-      if (!welcomeObserver) welcomeObserver = startWelcomeTextObserver();
+      if (!welcomeObserver) startWelcomeTextObserver();
       showToast('✨ Claude 字体与主题色已启用');
     } else {
-      if (welcomeObserver) { welcomeObserver.disconnect(); welcomeObserver = null; }
       removeClaudeFont();
       showToast('已切换到默认字体');
     }
@@ -471,17 +482,19 @@ main h1, main h2, main h3, [role="main"] h1, [role="main"] h2, [role="main"] h3 
   // ========= 初始化 =========
   function init() {
     console.log('🔧 Gemini Claude 字体切换器启动...');
-    if (isEnabled) {
-      applyClaudeFont();
-      welcomeObserver = startWelcomeTextObserver();
-    }
+
+    // 若启用：先注入样式，但 Observer 等 body/按钮就绪后再启动
+    if (isEnabled) applyClaudeFont();
 
     const createButtonWhenReady = () => {
-      if (document.body) createToggleButton();
-      else setTimeout(createButtonWhenReady, 100);
+      if (document.body) {
+        createToggleButton();
+      } else {
+        setTimeout(createButtonWhenReady, 100);
+      }
     };
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => setTimeout(createButtonWhenReady, 300));
+      document.addEventListener('DOMContentLoaded', () => setTimeout(createButtonWhenReady, 300), { once: true });
     } else {
       setTimeout(createButtonWhenReady, 300);
     }
@@ -497,6 +510,7 @@ main h1, main h2, main h3, [role="main"] h1, [role="main"] h2, [role="main"] h3 
         setTimeout(() => {
           if (!document.getElementById('claude-font-toggle')) createToggleButton();
           if (isEnabled && !styleElement) applyClaudeFont();
+          if (isEnabled && !welcomeObserver && document.body) startWelcomeTextObserver();
           if (isEnabled) setTimeout(applyWelcomeTextColor, 300);
         }, 800);
       }
@@ -533,6 +547,6 @@ main h1, main h2, main h3, [role="main"] h1, [role="main"] h2, [role="main"] h3 
     disable: () => { if (isEnabled) toggleFont(); },
     status: () => isEnabled,
     applyWelcomeColor: applyWelcomeTextColor,
-    version: '1.6.0'
+    version: '1.6.2'
   };
 })();
