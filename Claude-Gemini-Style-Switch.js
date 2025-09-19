@@ -1,8 +1,8 @@
 // ==UserScript==
-// @name         Gemini 仿 Claude 风格字体转换插件 1.5.1
-// @namespace    https://github.com/XXXX/
-// @version      1.5.1
-// @description  为Gemini网页添加Claude官网字体，支持一键开关切换，并将欢迎词改为Claude主题色
+// @name         Gemini 仿 Claude 风格字体转换插件 1.6.0
+// @namespace    https://github.com/XXX/
+// @version      1.6.0
+// @description  为 Gemini 网页添加 Claude 风格字体与主题变量，支持一键开关与欢迎词主题色
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -11,610 +11,528 @@
 // @grant        GM_registerMenuCommand
 // @grant        GM_unregisterMenuCommand
 // @run-at       document-start
+// @license      MIT
 // @updateURL
 // @downloadURL
 // ==/UserScript==
 
 (function() {
-    'use strict';
+  'use strict';
 
-    // 配置选项
-    const CONFIG = {
-        // Claude官网字体栈
-        claudeFont: 'ui-serif, Georgia, Cambria, "Times New Roman", Times, serif',
-        // 代码字体栈（保持等宽）
-        codeFont: '"Courier New", Monaco, Consolas, "Liberation Mono", monospace',
-        // Claude主题色
-        claudeThemeColor: '#da7756',
-        // 默认行高
-        lineHeight: '1.7',
-        // 存储键名
-        storageKey: 'gemini_claude_font_enabled'
+  // ========= Claude 主题变量（来自你提供的样式） =========
+  const THEME_CSS = `
+:root {
+  --background: oklch(0.9818 0.0054 95.0986);
+  --foreground: oklch(0.3438 0.0269 95.7226);
+  --card: oklch(0.9818 0.0054 95.0986);
+  --card-foreground: oklch(0.1908 0.0020 106.5859);
+  --popover: oklch(1.0000 0 0);
+  --popover-foreground: oklch(0.2671 0.0196 98.9390);
+  --primary: oklch(0.6171 0.1375 39.0427);
+  --primary-foreground: oklch(1.0000 0 0);
+  --secondary: oklch(0.9245 0.0138 92.9892);
+  --secondary-foreground: oklch(0.4334 0.0177 98.6048);
+  --muted: oklch(0.9341 0.0153 90.2390);
+  --muted-foreground: oklch(0.6059 0.0075 97.4233);
+  --accent: oklch(0.9245 0.0138 92.9892);
+  --accent-foreground: oklch(0.2671 0.0196 98.9390);
+  --destructive: oklch(0.1908 0.0020 106.5859);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.8847 0.0069 97.3627);
+  --input: oklch(0.7621 0.0156 98.3528);
+  --ring: oklch(0.6171 0.1375 39.0427);
+  --chart-1: oklch(0.5583 0.1276 42.9956);
+  --chart-2: oklch(0.6898 0.1581 290.4107);
+  --chart-3: oklch(0.8816 0.0276 93.1280);
+  --chart-4: oklch(0.8822 0.0403 298.1792);
+  --chart-5: oklch(0.5608 0.1348 42.0584);
+  --sidebar: oklch(0.9663 0.0080 98.8792);
+  --sidebar-foreground: oklch(0.3590 0.0051 106.6524);
+  --sidebar-primary: oklch(0.6171 0.1375 39.0427);
+  --sidebar-primary-foreground: oklch(0.9881 0 0);
+  --sidebar-accent: oklch(0.9245 0.0138 92.9892);
+  --sidebar-accent-foreground: oklch(0.3250 0 0);
+  --sidebar-border: oklch(0.9401 0 0);
+  --sidebar-ring: oklch(0.7731 0 0);
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, 'Noto Sans', sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+  --radius: 0.5rem;
+  --shadow-2xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+  --shadow-xs: 0 1px 3px 0px hsl(0 0% 0% / 0.05);
+  --shadow-sm: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 1px 2px -1px hsl(0 0% 0% / 0.10);
+  --shadow-md: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 2px 4px -1px hsl(0 0% 0% / 0.10);
+  --shadow-lg: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 4px 6px -1px hsl(0 0% 0% / 0.10);
+  --shadow-xl: 0 1px 3px 0px hsl(0 0% 0% / 0.10), 0 8px 10px -1px hsl(0 0% 0% / 0.10);
+  --shadow-2xl: 0 1px 3px 0px hsl(0 0% 0% / 0.25);
+  --tracking-normal: 0em;
+  --spacing: 0.25rem;
+}
+.dark {
+  --background: oklch(0.2679 0.0036 106.6427);
+  --foreground: oklch(0.8074 0.0142 93.0137);
+  --card: oklch(0.2679 0.0036 106.6427);
+  --card-foreground: oklch(0.9818 0.0054 95.0986);
+  --popover: oklch(0.3085 0.0035 106.6039);
+  --popover-foreground: oklch(0.9211 0.0040 106.4781);
+  --primary: oklch(0.6724 0.1308 38.7559);
+  --primary-foreground: oklch(1.0000 0 0);
+  --secondary: oklch(0.9818 0.0054 95.0986);
+  --secondary-foreground: oklch(0.3085 0.0035 106.6039);
+  --muted: oklch(0.2213 0.0038 106.7070);
+  --muted-foreground: oklch(0.7713 0.0169 99.0657);
+  --accent: oklch(0.2130 0.0078 95.4245);
+  --accent-foreground: oklch(0.9663 0.0080 98.8792);
+  --destructive: oklch(0.6368 0.2078 25.3313);
+  --destructive-foreground: oklch(1.0000 0 0);
+  --border: oklch(0.3618 0.0101 106.8928);
+  --input: oklch(0.4336 0.0113 100.2195);
+  --ring: oklch(0.6724 0.1308 38.7559);
+  --chart-1: oklch(0.5583 0.1276 42.9956);
+  --chart-2: oklch(0.6898 0.1581 290.4107);
+  --chart-3: oklch(0.2130 0.0078 95.4245);
+  --chart-4: oklch(0.3074 0.0516 289.3230);
+  --chart-5: oklch(0.5608 0.1348 42.0584);
+  --sidebar: oklch(0.2357 0.0024 67.7077);
+  --sidebar-foreground: oklch(0.8074 0.0142 93.0137);
+  --sidebar-primary: oklch(0.3250 0 0);
+  --sidebar-primary-foreground: oklch(0.9881 0 0);
+  --sidebar-accent: oklch(0.1680 0.0020 106.6177);
+  --sidebar-accent-foreground: oklch(0.8074 0.0142 93.0137);
+  --sidebar-border: oklch(0.9401 0 0);
+  --sidebar-ring: oklch(0.7731 0 0);
+}
+  `;
+
+  // ========= 配置：改为使用主题变量 =========
+  const CONFIG = {
+    claudeFont: 'var(--font-serif)',
+    codeFont: 'var(--font-mono)',
+    claudeThemeColor: 'var(--primary)',
+    lineHeight: '1.7',
+    storageKey: 'gemini_claude_font_enabled',
+  };
+
+  // ========= 状态 =========
+  let isEnabled = GM_getValue(CONFIG.storageKey, false);
+  let themeElement = null;     // 主题变量 <style>
+  let styleElement = null;     // 字体/结构 <style>
+  let btnStyleElement = null;  // 按钮 CSS <style>
+  let toggleButton = null;
+  let menuCommandId = null;
+  let welcomeObserver = null;
+
+  // ========= 主样式（使用主题变量） =========
+  const claudeFontCSS = `
+/* 字体替换（保留你的排除策略） */
+body, p, div, span, article, section, h1, h2, h3, h4, h5, h6,
+main, aside, header, footer, nav, ul, li, ol, dl, dt, dd,
+table, thead, tbody, tr, td, th, caption,
+form, fieldset, legend, label, input[type="text"], input[type="email"],
+input[type="password"], input[type="search"], textarea, select, option {
+  font-family: ${CONFIG.claudeFont} !important;
+  line-height: ${CONFIG.lineHeight} !important;
+  color: var(--foreground);
+}
+
+h1, h2, h3, h4, h5, h6 { line-height: 1.3 !important; }
+
+/* 代码保持等宽 */
+code, pre, .code, [class*="code"], [class*="mono"],
+.highlight, .language-*, textarea[class*="code"],
+div[class*="code"], span[class*="code"] {
+  font-family: ${CONFIG.codeFont} !important;
+}
+
+/* 控件/图标不改字体 */
+button, input[type="button"], input[type="submit"], input[type="reset"],
+[role="button"], [class*="button"], [class*="btn"],
+[class*="icon"], [class*="material"], [aria-label],
+svg, img, .mdc-*, [class*="mdc-"], [data-*="button"] {
+  font-family: inherit !important;
+}
+
+/* CJK 兜底 */
+[lang="zh"], [lang="zh-CN"], [lang="zh-TW"] {
+  font-family: ${CONFIG.claudeFont}, "Microsoft YaHei", "微软雅黑", "SimSun", "宋体" !important;
+}
+
+/* 页面背景 */
+body { background: var(--background); }
+
+/* 欢迎词候选容器（真正上色由 JS 判断） */
+div[class*="greeting"], span[class*="greeting"],
+h1[class*="greeting"], h2[class*="greeting"], h3[class*="greeting"],
+[data-testid*="greeting"], [class*="welcome"], [class*="hello"],
+main h1, main h2, main h3, [role="main"] h1, [role="main"] h2, [role="main"] h3 { }
+  `;
+
+  // ========= 按钮样式（使用主题变量） =========
+  const buttonCSS = `
+#claude-font-toggle {
+  position: fixed !important;
+  top: 80px !important;
+  right: 20px !important;
+  z-index: 2147483646 !important;
+  background: linear-gradient(135deg, var(--primary), color-mix(in oklch, var(--primary) 75%, black)) !important;
+  color: var(--primary-foreground) !important;
+  border: none !important;
+  border-radius: 20px !important;
+  padding: 8px 14px !important;
+  font-size: 12px !important;
+  font-weight: 600 !important;
+  cursor: pointer !important;
+  box-shadow: var(--shadow-sm) !important;
+  transition: transform .15s ease, box-shadow .15s ease, opacity .2s ease !important;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
+  min-width: 92px !important;
+  text-align: center !important;
+  user-select: none !important;
+  white-space: nowrap !important;
+  line-height: 1.2 !important;
+}
+#claude-font-toggle:hover{
+  transform: translateY(-1px) !important;
+  box-shadow: var(--shadow-md) !important;
+}
+#claude-font-toggle:active{ transform: translateY(0) !important; }
+#claude-font-toggle.disabled{
+  background: linear-gradient(135deg, var(--muted), color-mix(in oklch, var(--muted) 80%, black)) !important;
+  color: var(--muted-foreground) !important;
+}
+
+/* 响应式 */
+@media (max-width: 768px){
+  #claude-font-toggle{
+    top: 70px !important;
+    right: 14px !important;
+    padding: 6px 10px !important;
+    font-size: 11px !important;
+    min-width: 78px !important;
+  }
+}
+`;
+
+  // ========= 欢迎词检测与上色（打数据标） =========
+  function applyWelcomeTextColor() {
+    const welcomePatterns = [
+      /你好[，,\s]*([^\s，,]+)/i, /您好[，,\s]*([^\s，,]+)/i,
+      /hi[，,\s]+([^\s，,]+)/i, /hello[，,\s]+([^\s，,]+)/i,
+      /welcome[，,\s]+([^\s，,]+)/i, /bonjour[，,\s]+([^\s，,]+)/i,
+      /hola[，,\s]+([^\s，,]+)/i, /ciao[，,\s]+([^\s，,]+)/i,
+      /guten\s+tag[，,\s]+([^\s，,]+)/i, /こんにちは[，,\s]*([^\s，,]+)/,
+      /안녕하세요[，,\s]*([^\s，,]+)/
+    ];
+
+    const isInteractive = (el) => {
+      if (!el) return false;
+      const tag = el.tagName?.toLowerCase();
+      if (['input', 'textarea', 'select', 'button'].includes(tag)) return true;
+      if (el.isContentEditable) return true;
+      const role = el.getAttribute?.('role');
+      if (role === 'textbox' || role === 'button') return true;
+      return false;
     };
 
-    // 状态管理
-    let isEnabled = GM_getValue(CONFIG.storageKey, false);
-    let styleElement = null;
-    let toggleButton = null;
-    let menuCommandId = null;
-
-    // CSS样式定义 - 排除按钮相关元素 + 欢迎词颜色修改
-    const claudeFontCSS = `
-        /* 主要字体替换 - 但排除特定元素 */
-        body, p, div, span, article, section, h1, h2, h3, h4, h5, h6,
-        main, aside, header, footer, nav, ul, li, ol, dl, dt, dd,
-        table, thead, tbody, tr, td, th, caption,
-        form, fieldset, legend, label, input[type="text"], input[type="email"],
-        input[type="password"], input[type="search"], textarea, select, option {
-            font-family: ${CONFIG.claudeFont} !important;
-            line-height: ${CONFIG.lineHeight} !important;
+    // 文本节点扫描
+    const walker = document.createTreeWalker(
+      document.body,
+      NodeFilter.SHOW_TEXT,
+      {
+        acceptNode(node) {
+          const p = node.parentElement;
+          if (!p) return NodeFilter.FILTER_REJECT;
+          const tag = p.tagName.toLowerCase();
+          if (['script', 'style', 'svg', 'path'].includes(tag)) return NodeFilter.FILTER_REJECT;
+          if (isInteractive(p)) return NodeFilter.FILTER_REJECT;
+          const cls = (p.className || '') + '';
+          if (/\b(button|btn|icon|mdc-)\b/.test(cls)) return NodeFilter.FILTER_REJECT;
+          return NodeFilter.FILTER_ACCEPT;
         }
+      }
+    );
 
-        /* 标题特殊行高 */
-        h1, h2, h3, h4, h5, h6 {
-            line-height: 1.3 !important;
+    let n;
+    while ((n = walker.nextNode())) {
+      const text = (n.textContent || '').trim();
+      if (!text) continue;
+      if (welcomePatterns.some((re) => re.test(text))) {
+        const el = n.parentElement;
+        if (el && !el.dataset.claudeWelcomeColored) {
+          el.style.setProperty('color', CONFIG.claudeThemeColor, 'important');
+          el.dataset.claudeWelcomeColored = '1';
+          // 记录用于回滚
         }
+      }
+    }
 
-        /* 保持代码块的等宽字体 */
-        code,
-        pre,
-        .code,
-        [class*="code"],
-        [class*="mono"],
-        .highlight,
-        .language-*,
-        textarea[class*="code"],
-        div[class*="code"],
-        span[class*="code"] {
-            font-family: ${CONFIG.codeFont} !important;
+    // 再扫一遍候选容器
+    const selectors = [
+      'h1, h2, h3',
+      '[class*="welcome"]',
+      '[class*="greeting"]',
+      '[class*="hello"]',
+      '[data-testid*="welcome"]',
+      '[data-testid*="greeting"]',
+      'main h1, main h2, main h3',
+      '[role="main"] h1, [role="main"] h2, [role="main"] h3'
+    ];
+    selectors.forEach(sel => {
+      document.querySelectorAll(sel).forEach(el => {
+        const t = (el.textContent || '').trim();
+        if (!t) return;
+        if (welcomePatterns.some((re) => re.test(t))) {
+          if (!el.dataset.claudeWelcomeColored) {
+            el.style.setProperty('color', CONFIG.claudeThemeColor, 'important');
+            el.dataset.claudeWelcomeColored = '1';
+          }
         }
+      });
+    });
+  }
 
-        /* 排除所有按钮、图标、控件元素，避免影响UI */
-        button,
-        input[type="button"],
-        input[type="submit"],
-        input[type="reset"],
-        [role="button"],
-        [class*="button"],
-        [class*="btn"],
-        [class*="icon"],
-        [class*="material"],
-        [aria-label],
-        svg,
-        img,
-        .mdc-*,
-        [class*="mdc-"],
-        [data-*="button"] {
-            font-family: inherit !important;
-        }
+  function restoreWelcomeTextColor() {
+    document.querySelectorAll('[data-claude-welcome-colored="1"]').forEach(el => {
+      el.style.removeProperty('color');
+      delete el.dataset.claudeWelcomeColored;
+    });
+  }
 
-        /* 确保中文字符正确显示 */
-        [lang="zh"], [lang="zh-CN"], [lang="zh-TW"] {
-            font-family: ${CONFIG.claudeFont}, "Microsoft YaHei", "微软雅黑", "SimSun", "宋体" !important;
-        }
+  // ========= 观察欢迎词（SPA 变动） =========
+  function startWelcomeTextObserver() {
+    if (!isEnabled) return null;
+    const debounced = (() => {
+      let t = null;
+      return () => {
+        clearTimeout(t);
+        t = setTimeout(applyWelcomeTextColor, 120);
+      };
+    })();
 
-        /* 欢迎词颜色修改 - 支持多语言 */
-        /* 通过文本内容匹配各种语言的欢迎词 */
-        *:not(button):not([role="button"]):not(svg):not(path):not([class*="icon"]) {
-            /* 检测包含欢迎词的元素 */
+    const obs = new MutationObserver(muts => {
+      for (const m of muts) {
+        if (m.type === 'childList' || m.type === 'characterData') {
+          debounced();
+          break;
         }
+      }
+    });
+    obs.observe(document.body, { childList: true, subtree: true, characterData: true });
+    return obs;
+  }
 
-        /* 通用欢迎词样式 - 匹配包含用户名的问候语 */
-        div[class*="greeting"],
-        span[class*="greeting"],
-        h1[class*="greeting"],
-        h2[class*="greeting"],
-        h3[class*="greeting"],
-        [data-testid*="greeting"],
-        [class*="welcome"],
-        [class*="hello"],
-        /* 主页面大标题区域 */
-        main h1,
-        main h2,
-        main h3,
-        [role="main"] h1,
-        [role="main"] h2,
-        [role="main"] h3 {
-            color: ${CONFIG.claudeThemeColor} !important;
-        }
+  // ========= 按钮/Toast =========
+  function createToggleButton() {
+    if (toggleButton) return;
 
-        /* 更精确的选择器 - 针对Gemini的特定结构 */
-        /* 主页面的欢迎标题 */
-        div[class*="home"] h1,
-        div[class*="welcome"] h1,
-        div[class*="greeting"] h1,
-        /* 包含逗号的文本（通常是"你好，用户名"格式） */
-        *:not(button):not([role="button"]):not(svg):not(path):not([class*="icon"]):not(input):not(textarea) {
-            /* 这里用JS动态检测和修改 */
-        }
+    // 注入按钮样式（单独 <style>，便于移除）
+    if (!btnStyleElement) {
+      btnStyleElement = document.createElement('style');
+      btnStyleElement.id = 'claude-font-button-style';
+      btnStyleElement.textContent = buttonCSS;
+      (document.head || document.documentElement).appendChild(btnStyleElement);
+    }
+
+    toggleButton = document.createElement('button');
+    toggleButton.id = 'claude-font-toggle';
+    updateButtonState();
+    toggleButton.addEventListener('click', toggleFont);
+    document.body.appendChild(toggleButton);
+
+    let hoverTimeout;
+    toggleButton.addEventListener('mouseenter', () => {
+      hoverTimeout = setTimeout(() => {
+        showToast(isEnabled ? 'Claude 优雅衬线字体已启用' : '使用默认系统字体');
+      }, 1000);
+    });
+    toggleButton.addEventListener('mouseleave', () => clearTimeout(hoverTimeout));
+
+    console.log('✅ 切换按钮已创建');
+  }
+
+  function updateButtonState() {
+    if (!toggleButton) return;
+    if (isEnabled) {
+      toggleButton.textContent = 'Claude字体';
+      toggleButton.className = '';
+      toggleButton.title = '当前：Claude衬线字体 + 主题色\n点击切换到默认字体\n快捷键：Ctrl+Shift+F';
+    } else {
+      toggleButton.textContent = '默认字体';
+      toggleButton.className = 'disabled';
+      toggleButton.title = '当前：默认系统字体\n点击切换到Claude字体 + 主题色\n快捷键：Ctrl+Shift+F';
+    }
+  }
+
+  function showToast(message) {
+    const existing = document.getElementById('claude-font-toast');
+    if (existing) existing.remove();
+
+    const toast = document.createElement('div');
+    toast.id = 'claude-font-toast';
+    toast.textContent = message;
+    toast.style.cssText = `
+      position: fixed !important;
+      top: 130px !important;
+      right: 20px !important;
+      z-index: 2147483647 !important;
+      background: color-mix(in oklch, var(--popover) 86%, black) !important;
+      color: var(--popover-foreground) !important;
+      padding: 8px 12px !important;
+      border-radius: 8px !important;
+      font-size: 13px !important;
+      font-family: system-ui, -apple-system, sans-serif !important;
+      box-shadow: var(--shadow-md) !important;
+      opacity: 0 !important;
+      transition: opacity .25s ease !important;
+      max-width: 240px !important;
+      white-space: nowrap !important;
+      line-height: 1.3 !important;
+      pointer-events: none !important;
     `;
+    document.body.appendChild(toast);
+    requestAnimationFrame(() => toast.style.opacity = '1');
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 260);
+    }, 1800);
+  }
 
-    // 欢迎词检测和颜色修改的JavaScript函数
-    function applyWelcomeTextColor() {
-        // 常见的欢迎词模式（支持多语言）
-        const welcomePatterns = [
-            /你好[，,\s]*([^，,\s\n]+)/i,        // 中文：你好，用户名
-            /您好[，,\s]*([^，,\s\n]+)/i,        // 中文：您好，用户名
-            /hi[，,\s]+([^，,\s\n]+)/i,          // 英文：Hi, 用户名
-            /hello[，,\s]+([^，,\s\n]+)/i,       // 英文：Hello, 用户名
-            /welcome[，,\s]+([^，,\s\n]+)/i,     // 英文：Welcome, 用户名
-            /bonjour[，,\s]+([^，,\s\n]+)/i,     // 法文：Bonjour, 用户名
-            /hola[，,\s]+([^，,\s\n]+)/i,        // 西班牙文：Hola, 用户名
-            /ciao[，,\s]+([^，,\s\n]+)/i,        // 意大利文：Ciao, 用户名
-            /guten\s+tag[，,\s]+([^，,\s\n]+)/i, // 德文：Guten Tag, 用户名
-            /こんにちは[，,\s]*([^，,\s\n]+)/i,    // 日文：こんにちは、用户名
-            /안녕하세요[，,\s]*([^，,\s\n]+)/i     // 韩文：안녕하세요, 用户名
-        ];
+  // ========= 菜单 =========
+  function registerMenuCommand() {
+    if (menuCommandId) {
+      GM_unregisterMenuCommand(menuCommandId);
+    }
+    menuCommandId = GM_registerMenuCommand(
+      isEnabled ? '❌ 关闭 Claude 字体与主题色' : '✅ 启用 Claude 字体与主题色',
+      toggleFont,
+      'c'
+    );
+  }
 
-        // 搜索所有文本节点
-        const walker = document.createTreeWalker(
-            document.body,
-            NodeFilter.SHOW_TEXT,
-            {
-                acceptNode: function(node) {
-                    // 排除脚本、样式、按钮等元素
-                    const parent = node.parentElement;
-                    if (!parent) return NodeFilter.FILTER_REJECT;
+  // ========= 应用/移除样式 =========
+  function applyClaudeFont() {
+    if (styleElement) return;
 
-                    const tagName = parent.tagName.toLowerCase();
-                    if (['script', 'style', 'button', 'svg', 'path'].includes(tagName)) {
-                        return NodeFilter.FILTER_REJECT;
-                    }
-
-                    const className = parent.className || '';
-                    if (className.includes('button') || className.includes('btn') || className.includes('icon')) {
-                        return NodeFilter.FILTER_REJECT;
-                    }
-
-                    const role = parent.getAttribute('role');
-                    if (role === 'button') {
-                        return NodeFilter.FILTER_REJECT;
-                    }
-
-                    return NodeFilter.FILTER_ACCEPT;
-                }
-            }
-        );
-
-        const textNodes = [];
-        let node;
-        while (node = walker.nextNode()) {
-            textNodes.push(node);
-        }
-
-        // 检查每个文本节点是否包含欢迎词
-        textNodes.forEach(textNode => {
-            const text = textNode.textContent.trim();
-            if (!text) return;
-
-            // 检查是否匹配任何欢迎词模式
-            const isWelcomeText = welcomePatterns.some(pattern => pattern.test(text));
-
-            if (isWelcomeText) {
-                const parent = textNode.parentElement;
-                if (parent) {
-                    // 应用Claude主题色
-                    parent.style.setProperty('color', CONFIG.claudeThemeColor, 'important');
-                    console.log('✅ 找到欢迎词并应用Claude主题色:', text);
-                }
-            }
-        });
-
-        // 也检查特定的元素选择器
-        const welcomeSelectors = [
-            'h1, h2, h3', // 主标题
-            '[class*="welcome"]',
-            '[class*="greeting"]',
-            '[class*="hello"]',
-            '[data-testid*="welcome"]',
-            '[data-testid*="greeting"]',
-            'main h1, main h2, main h3',
-            '[role="main"] h1, [role="main"] h2, [role="main"] h3'
-        ];
-
-        welcomeSelectors.forEach(selector => {
-            try {
-                const elements = document.querySelectorAll(selector);
-                elements.forEach(element => {
-                    const text = element.textContent.trim();
-                    if (!text) return;
-
-                    const isWelcomeText = welcomePatterns.some(pattern => pattern.test(text));
-                    if (isWelcomeText) {
-                        element.style.setProperty('color', CONFIG.claudeThemeColor, 'important');
-                        console.log('✅ 通过选择器找到欢迎词并应用Claude主题色:', text);
-                    }
-                });
-            } catch (e) {
-                // 忽略无效选择器错误
-            }
-        });
+    // 注入主题变量
+    if (!themeElement) {
+      themeElement = document.createElement('style');
+      themeElement.id = 'claude-theme-style';
+      themeElement.textContent = THEME_CSS;
+      (document.head || document.documentElement).appendChild(themeElement);
     }
 
-    // 切换按钮样式 - 位置下调避免遮挡账户头像
-    const buttonCSS = `
-        #claude-font-toggle {
-            position: fixed !important;
-            top: 80px !important;
-            right: 20px !important;
-            z-index: 9999 !important;
-            background: linear-gradient(135deg, #da7756, #bd5d3a) !important;
-            color: white !important;
-            border: none !important;
-            border-radius: 20px !important;
-            padding: 8px 14px !important;
-            font-size: 12px !important;
-            font-weight: 500 !important;
-            cursor: pointer !important;
-            box-shadow: 0 3px 10px rgba(218, 119, 86, 0.3) !important;
-            transition: all 0.2s ease !important;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif !important;
-            min-width: 85px !important;
-            text-align: center !important;
-            user-select: none !important;
-            white-space: nowrap !important;
-            line-height: 1.2 !important;
-        }
+    // 注入主样式
+    styleElement = document.createElement('style');
+    styleElement.id = 'claude-font-style';
+    styleElement.textContent = claudeFontCSS;
+    (document.head || document.documentElement).appendChild(styleElement);
 
-        #claude-font-toggle:hover {
-            background: linear-gradient(135deg, #c96a4a, #a54d32) !important;
-            box-shadow: 0 4px 12px rgba(218, 119, 86, 0.4) !important;
-            transform: translateY(-1px) !important;
-        }
+    // 欢迎词上色
+    setTimeout(applyWelcomeTextColor, 300);
+    console.log('✅ 主题与 Claude 字体已应用');
+  }
 
-        #claude-font-toggle:active {
-            transform: translateY(0) !important;
-            box-shadow: 0 2px 6px rgba(218, 119, 86, 0.3) !important;
-        }
+  function removeClaudeFont() {
+    if (styleElement) {
+      styleElement.remove();
+      styleElement = null;
+    }
+    // 移除主题变量（避免对页面其他元素产生长期影响）
+    if (themeElement) {
+      themeElement.remove();
+      themeElement = null;
+    }
+    // 恢复欢迎词颜色
+    restoreWelcomeTextColor();
 
-        #claude-font-toggle.disabled {
-            background: linear-gradient(135deg, #888, #666) !important;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.2) !important;
-        }
+    console.log('❌ Claude 字体和主题色已移除');
+  }
 
-        #claude-font-toggle.disabled:hover {
-            background: linear-gradient(135deg, #999, #777) !important;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.25) !important;
-        }
+  // ========= 切换 =========
+  function toggleFont() {
+    isEnabled = !isEnabled;
+    GM_setValue(CONFIG.storageKey, isEnabled);
 
-        /* 响应式设计 */
-        @media (max-width: 768px) {
-            #claude-font-toggle {
-                top: 70px !important;
-                right: 15px !important;
-                padding: 6px 10px !important;
-                font-size: 11px !important;
-                min-width: 70px !important;
-            }
-        }
+    if (isEnabled) {
+      applyClaudeFont();
+      if (!welcomeObserver) welcomeObserver = startWelcomeTextObserver();
+      showToast('✨ Claude 字体与主题色已启用');
+    } else {
+      if (welcomeObserver) { welcomeObserver.disconnect(); welcomeObserver = null; }
+      removeClaudeFont();
+      showToast('已切换到默认字体');
+    }
+    updateButtonState();
+    registerMenuCommand();
+    console.log(`[Claude Font] ${isEnabled ? 'ON' : 'OFF'}`);
+  }
 
-        /* 确保不影响Gemini原有按钮 */
-        #claude-font-toggle * {
-            font-family: inherit !important;
-        }
-    `;
-
-    // 应用Claude字体和主题色
-    function applyClaudeFont() {
-        if (styleElement) return;
-
-        styleElement = document.createElement('style');
-        styleElement.id = 'claude-font-style';
-        styleElement.textContent = claudeFontCSS;
-
-        // 添加到head
-        const target = document.head || document.documentElement;
-        target.appendChild(styleElement);
-
-        // 应用欢迎词颜色
-        setTimeout(applyWelcomeTextColor, 500);
-
-        console.log('✅ Claude字体和主题色已应用');
+  // ========= 初始化 =========
+  function init() {
+    console.log('🔧 Gemini Claude 字体切换器启动...');
+    if (isEnabled) {
+      applyClaudeFont();
+      welcomeObserver = startWelcomeTextObserver();
     }
 
-    // 移除Claude字体和主题色
-    function removeClaudeFont() {
-        if (styleElement) {
-            styleElement.remove();
-            styleElement = null;
-
-            // 移除欢迎词颜色修改
-            restoreWelcomeTextColor();
-
-            console.log('❌ Claude字体和主题色已移除');
-        }
+    const createButtonWhenReady = () => {
+      if (document.body) createToggleButton();
+      else setTimeout(createButtonWhenReady, 100);
+    };
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', () => setTimeout(createButtonWhenReady, 300));
+    } else {
+      setTimeout(createButtonWhenReady, 300);
     }
 
-    // 恢复欢迎词原始颜色
-    function restoreWelcomeTextColor() {
-        const elements = document.querySelectorAll('*[style*="color"]');
-        elements.forEach(element => {
-            const style = element.style.color;
-            if (style && style.includes(CONFIG.claudeThemeColor)) {
-                element.style.removeProperty('color');
-            }
-        });
-    }
+    registerMenuCommand();
 
-    // 创建切换按钮
-    function createToggleButton() {
-        if (toggleButton) return;
-
-        // 先添加按钮样式
-        const buttonStyle = document.createElement('style');
-        buttonStyle.id = 'claude-font-button-style';
-        buttonStyle.textContent = buttonCSS;
-        (document.head || document.documentElement).appendChild(buttonStyle);
-
-        // 创建按钮元素
-        toggleButton = document.createElement('button');
-        toggleButton.id = 'claude-font-toggle';
-
-        // 设置按钮文本和状态
-        updateButtonState();
-
-        // 添加点击事件
-        toggleButton.addEventListener('click', toggleFont);
-
-        // 添加到页面
-        document.body.appendChild(toggleButton);
-
-        // 添加悬停提示
-        let hoverTimeout;
-        toggleButton.addEventListener('mouseenter', () => {
-            hoverTimeout = setTimeout(() => {
-                showToast(isEnabled ? 'Claude优雅衬线字体已启用' : '使用默认系统字体');
-            }, 1000);
-        });
-
-        toggleButton.addEventListener('mouseleave', () => {
-            clearTimeout(hoverTimeout);
-        });
-
-        console.log('✅ 切换按钮已创建');
-    }
-
-    // 更新按钮状态
-    function updateButtonState() {
-        if (!toggleButton) return;
-
-        if (isEnabled) {
-            toggleButton.textContent = 'Claude字体';
-            toggleButton.className = '';
-            toggleButton.title = '当前：Claude衬线字体 + 主题色\n点击切换到默认字体\n快捷键：Ctrl+Shift+F';
-        } else {
-            toggleButton.textContent = '默认字体';
-            toggleButton.className = 'disabled';
-            toggleButton.title = '当前：默认系统字体\n点击切换到Claude字体 + 主题色\n快捷键：Ctrl+Shift+F';
-        }
-    }
-
-    // 切换字体功能
-    function toggleFont() {
-        isEnabled = !isEnabled;
-        GM_setValue(CONFIG.storageKey, isEnabled);
-
-        if (isEnabled) {
-            applyClaudeFont();
-            showToast('✨ Claude字体和主题色已启用');
-        } else {
-            removeClaudeFont();
-            showToast('   已切换到默认字体');
-        }
-
-        // 更新按钮状态
-        updateButtonState();
-
-        // 更新菜单命令
-        registerMenuCommand();
-
-        console.log(`   字体切换: ${isEnabled ? 'Claude字体+主题色' : '默认字体'}`);
-    }
-
-    // 显示提示消息
-    function showToast(message) {
-        // 移除现有的提示
-        const existingToast = document.getElementById('claude-font-toast');
-        if (existingToast) {
-            existingToast.remove();
-        }
-
-        // 创建新提示
-        const toast = document.createElement('div');
-        toast.id = 'claude-font-toast';
-        toast.textContent = message;
-        toast.style.cssText = `
-            position: fixed !important;
-            top: 130px !important;
-            right: 20px !important;
-            z-index: 10000 !important;
-            background: rgba(0, 0, 0, 0.85) !important;
-            color: white !important;
-            padding: 8px 12px !important;
-            border-radius: 6px !important;
-            font-size: 13px !important;
-            font-family: system-ui, -apple-system, sans-serif !important;
-            box-shadow: 0 3px 10px rgba(0, 0, 0, 0.3) !important;
-            opacity: 0 !important;
-            transition: opacity 0.3s ease !important;
-            max-width: 200px !important;
-            word-wrap: break-word !important;
-            white-space: nowrap !important;
-            line-height: 1.3 !important;
-        `;
-
-        document.body.appendChild(toast);
-
-        // 显示动画
-        requestAnimationFrame(() => {
-            toast.style.opacity = '1';
-        });
-
-        // 自动消失
+    // 监听 SPA URL 变化（保证按钮/样式在新视图可见）
+    let lastUrl = location.href;
+    const urlObs = new MutationObserver(() => {
+      const url = location.href;
+      if (url !== lastUrl) {
+        lastUrl = url;
         setTimeout(() => {
-            toast.style.opacity = '0';
-            setTimeout(() => {
-                if (toast.parentNode) {
-                    toast.remove();
-                }
-            }, 300);
-        }, 2000);
-    }
-
-    // 注册右键菜单命令
-    function registerMenuCommand() {
-        if (menuCommandId) {
-            GM_unregisterMenuCommand(menuCommandId);
-        }
-
-        menuCommandId = GM_registerMenuCommand(
-            isEnabled ? '❌ 关闭Claude字体和主题色' : '✅ 启用Claude字体和主题色',
-            toggleFont,
-            'c'
-        );
-    }
-
-    // 监听DOM变化，动态应用欢迎词颜色
-    function startWelcomeTextObserver() {
-        if (!isEnabled) return;
-
-        const observer = new MutationObserver((mutations) => {
-            let shouldApplyColor = false;
-
-            mutations.forEach((mutation) => {
-                if (mutation.type === 'childList') {
-                    mutation.addedNodes.forEach((node) => {
-                        if (node.nodeType === Node.ELEMENT_NODE || node.nodeType === Node.TEXT_NODE) {
-                            shouldApplyColor = true;
-                        }
-                    });
-                }
-
-                if (mutation.type === 'characterData') {
-                    shouldApplyColor = true;
-                }
-            });
-
-            if (shouldApplyColor) {
-                // 延迟应用，避免过于频繁
-                setTimeout(applyWelcomeTextColor, 100);
-            }
-        });
-
-        observer.observe(document.body, {
-            childList: true,
-            subtree: true,
-            characterData: true
-        });
-
-        return observer;
-    }
-
-    let welcomeObserver = null;
-
-    // 初始化函数
-    function init() {
-        console.log('   Gemini Claude字体切换器启动...');
-
-        // 如果启用了Claude字体，立即应用
-        if (isEnabled) {
-            applyClaudeFont();
-            welcomeObserver = startWelcomeTextObserver();
-        }
-
-        // 等待页面加载完成后创建按钮
-        const createButtonWhenReady = () => {
-            if (document.body) {
-                createToggleButton();
-            } else {
-                setTimeout(createButtonWhenReady, 100);
-            }
-        };
-
-        if (document.readyState === 'loading') {
-            document.addEventListener('DOMContentLoaded', () => {
-                setTimeout(createButtonWhenReady, 500);
-            });
-        } else {
-            setTimeout(createButtonWhenReady, 500);
-        }
-
-        // 注册菜单命令
-        registerMenuCommand();
-
-        // 监听页面变化（SPA应用）
-        let lastUrl = location.href;
-        const observer = new MutationObserver(() => {
-            const url = location.href;
-            if (url !== lastUrl) {
-                lastUrl = url;
-                setTimeout(() => {
-                    if (!document.getElementById('claude-font-toggle')) {
-                        createToggleButton();
-                    }
-                    if (isEnabled && !styleElement) {
-                        applyClaudeFont();
-                        if (!welcomeObserver) {
-                            welcomeObserver = startWelcomeTextObserver();
-                        }
-                    }
-                    // 页面变化时重新应用欢迎词颜色
-                    if (isEnabled) {
-                        setTimeout(applyWelcomeTextColor, 500);
-                    }
-                }, 1000);
-            }
-        });
-
-        observer.observe(document, { subtree: true, childList: true });
-
-        console.log(`✅ 初始化完成 - 当前状态: ${isEnabled ? 'Claude字体+主题色' : '默认字体'}`);
-    }
-
-    // 页面卸载时清理
-    window.addEventListener('beforeunload', () => {
-        if (menuCommandId) {
-            GM_unregisterMenuCommand(menuCommandId);
-        }
-        if (welcomeObserver) {
-            welcomeObserver.disconnect();
-        }
+          if (!document.getElementById('claude-font-toggle')) createToggleButton();
+          if (isEnabled && !styleElement) applyClaudeFont();
+          if (isEnabled) setTimeout(applyWelcomeTextColor, 300);
+        }, 800);
+      }
     });
+    urlObs.observe(document, { subtree: true, childList: true });
 
-    // 快捷键支持 (Ctrl+Shift+F)
-    document.addEventListener('keydown', (e) => {
-        if (e.ctrlKey && e.shiftKey && e.key === 'F') {
-            e.preventDefault();
-            toggleFont();
-        }
-    });
+    console.log(`✅ 初始化完成 - 当前状态: ${isEnabled ? 'Claude字体+主题色' : '默认字体'}`);
+  }
 
-    // 启动脚本
-    init();
+  // ========= 快捷键（Ctrl+Shift+F），避免输入态触发 =========
+  document.addEventListener('keydown', (e) => {
+    const ae = document.activeElement;
+    const onInput = ae && (ae.isContentEditable || /^(input|textarea|select)$/i.test(ae.tagName));
+    if (onInput) return;
+    if (e.ctrlKey && e.shiftKey && (e.code === 'KeyF' || e.key === 'F')) {
+      e.preventDefault();
+      toggleFont();
+    }
+  }, true);
 
-    // 控制台调试接口
-    window.ClaudeFontToggler = {
-        toggle: toggleFont,
-        enable: () => {
-            if (!isEnabled) {
-                toggleFont();
-                if (!welcomeObserver) {
-                    welcomeObserver = startWelcomeTextObserver();
-                }
-            }
-        },
-        disable: () => {
-            if (isEnabled) {
-                toggleFont();
-                if (welcomeObserver) {
-                    welcomeObserver.disconnect();
-                    welcomeObserver = null;
-                }
-            }
-        },
-        status: () => isEnabled,
-        applyWelcomeColor: applyWelcomeTextColor,
-        version: '1.5.1'
-    };
+  // ========= 卸载清理 =========
+  window.addEventListener('beforeunload', () => {
+    try { if (menuCommandId) GM_unregisterMenuCommand(menuCommandId); } catch {}
+    if (welcomeObserver) { welcomeObserver.disconnect(); welcomeObserver = null; }
+  });
 
+  // ========= 启动 =========
+  init();
+
+  // ========= 控制台调试接口 =========
+  window.ClaudeFontToggler = {
+    toggle: toggleFont,
+    enable: () => { if (!isEnabled) toggleFont(); },
+    disable: () => { if (isEnabled) toggleFont(); },
+    status: () => isEnabled,
+    applyWelcomeColor: applyWelcomeTextColor,
+    version: '1.6.0'
+  };
 })();
