@@ -2,7 +2,7 @@
 // @name         Gemini 仿 Claude 风格字体转换插件
 // @namespace    https://github.com/XXX/
 // @version      1.6.5
-// @description  Claude 风格字体与主题变量 + 侧栏配色统一；支持一键开关、修复刷新后按钮缺失（更大&更粗字体）
+// @description  Claude 风格字体与主题变量 + 侧栏与正文背景统一；支持一键开关、修复刷新后按钮缺失（更大&更粗字体）
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -125,7 +125,7 @@
     claudeFont: 'var(--font-serif)',
     codeFont: 'var(--font-mono)',
     claudeThemeColor: 'var(--primary)',
-    lineHeight: '1.72', // v1.6.1 更松的行高
+    lineHeight: '1.72',
     storageKey: 'gemini_claude_font_enabled',
   };
 
@@ -135,6 +135,7 @@
   let styleElement = null;
   let btnStyleElement = null;
   let sidebarStyleElement = null;
+  let mainContentStyleElement = null;
   let toggleButton = null;
   let menuCommandId = null;
 
@@ -154,105 +155,92 @@ input[type="password"], input[type="search"], textarea, select, option {
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
-
-/* 标题：更紧凑行高 & 合理字重 */
 h1 { line-height: 1.25 !important; font-weight: 700 !important; }
 h2 { line-height: 1.28 !important; font-weight: 650 !important; }
 h3 { line-height: 1.30 !important; font-weight: 600 !important; }
 h4, h5, h6 { line-height: 1.35 !important; font-weight: 600 !important; }
-
-/* 段落/列表微增字号，提升可读性 */
 p, li { font-size: calc(var(--font-size-base) * 1.02) !important; }
-
-/* strong/b 更清晰 */
 strong, b { font-weight: var(--font-weight-strong) !important; }
-
-/* 代码保持等宽 */
 code, pre, .code, [class*="code"], [class*="mono"],
 .highlight, .language-*, textarea[class*="code"],
 div[class*="code"], span[class*="code"] {
   font-family: ${CONFIG.codeFont} !important;
 }
-
-/* 控件/图标不改字体 */
 button, input[type="button"], input[type="submit"], input[type="reset"],
 [role="button"], [class*="button"], [class*="btn"],
 [class*="icon"], [class*="material"], [aria-label],
 svg, img, .mdc-*, [class*="mdc-"], [data-*="button"] {
   font-family: inherit !important;
 }
-
-/* CJK 兜底 */
 [lang="zh"], [lang="zh-CN"], [lang="zh-TW"] {
   font-family: ${CONFIG.claudeFont}, "Microsoft YaHei", "微软雅黑", "SimSun", "宋体" !important;
 }
 `;
 
-  // ========= 侧栏主题补丁（统一背景/前景/hover/选中） =========
+  // ========= 侧栏主题补丁 =========
   const SIDEBAR_CSS = `
-/* 容器背景与边线 */
 :is(aside, nav)[class*="sidebar" i],
-[aria-label*="sidebar" i],
-[aria-label*="侧边" i],
-[role="navigation"][class],
-[class*="side-nav" i],
-[class*="leftnav" i],
-[class*="left-nav" i] {
+[aria-label*="sidebar" i], [aria-label*="侧边" i],
+[role="navigation"][class], [class*="side-nav" i],
+[class*="leftnav" i], [class*="left-nav" i] {
   background: var(--sidebar) !important;
   color: var(--sidebar-foreground) !important;
   border-right: 1px solid var(--sidebar-border) !important;
 }
-
-/* 侧栏标题、分组标题 */
-:is(aside, nav)[class*="sidebar" i] h1,
-:is(aside, nav)[class*="sidebar" i] h2,
-:is(aside, nav)[class*="sidebar" i] h3,
-[aria-label*="sidebar" i] h1,
-[aria-label*="sidebar" i] h2,
-[aria-label*="sidebar" i] h3 {
+:is(aside, nav)[class*="sidebar" i] h1, :is(aside, nav)[class*="sidebar" i] h2,
+:is(aside, nav)[class*="sidebar" i] h3, [aria-label*="sidebar" i] h1,
+[aria-label*="sidebar" i] h2, [aria-label*="sidebar" i] h3 {
   color: var(--sidebar-foreground) !important;
   font-weight: 650 !important;
 }
-
-/* 列表项（链接/按钮） */
-:is(aside, nav)[class*="sidebar" i] a,
-:is(aside, nav)[class*="sidebar" i] button,
-[aria-label*="sidebar" i] a,
-[aria-label*="sidebar" i] button,
-[class*="side-nav" i] a,
-[class*="side-nav" i] button,
-[class*="leftnav" i] a,
-[class*="leftnav" i] button,
-[class*="left-nav" i] a,
-[class*="left-nav" i] button {
+:is(aside, nav)[class*="sidebar" i] a, :is(aside, nav)[class*="sidebar" i] button,
+[aria-label*="sidebar" i] a, [aria-label*="sidebar" i] button,
+[class*="side-nav" i] a, [class*="side-nav" i] button,
+[class*="leftnav" i] a, [class*="leftnav" i] button,
+[class*="left-nav" i] a, [class*="left-nav" i] button {
   color: var(--sidebar-foreground) !important;
   border-radius: var(--radius) !important;
 }
-
-/* hover/聚焦 */
-:is(aside, nav)[class*="sidebar" i] a:hover,
-:is(aside, nav)[class*="sidebar" i] button:hover,
-[aria-label*="sidebar" i] a:hover,
-[aria-label*="sidebar" i] button:hover {
+:is(aside, nav)[class*="sidebar" i] a:hover, :is(aside, nav)[class*="sidebar" i] button:hover,
+[aria-label*="sidebar" i] a:hover, [aria-label*="sidebar" i] button:hover {
   background: var(--sidebar-accent) !important;
   color: var(--sidebar-accent-foreground) !important;
 }
-
-/* 选中/当前项 */
-:is(aside, nav)[class*="sidebar" i] [aria-current],
-:is(aside, nav)[class*="sidebar" i] .active,
-[aria-label*="sidebar" i] [aria-current],
-[aria-label*="sidebar" i] .active {
+:is(aside, nav)[class*="sidebar" i] [aria-current], :is(aside, nav)[class*="sidebar" i] .active,
+[aria-label*="sidebar" i] [aria-current], [aria-label*="sidebar" i] .active {
   background: var(--sidebar-primary) !important;
   color: var(--sidebar-primary-foreground) !important;
 }
-
-/* 图标与分割线 */
-:is(aside, nav)[class*="sidebar" i] svg,
-[aria-label*="sidebar" i] svg { fill: currentColor !important; color: currentColor !important; }
-:is(aside, nav)[class*="sidebar" i] hr,
-[aria-label*="sidebar" i] hr { border-color: var(--sidebar-border) !important; opacity: .8 !important; }
+:is(aside, nav)[class*="sidebar" i] svg, [aria-label*="sidebar" i] svg { fill: currentColor !important; color: currentColor !important; }
+:is(aside, nav)[class*="sidebar" i] hr, [aria-label*="sidebar" i] hr { border-color: var(--sidebar-border) !important; opacity: .8 !important; }
 `;
+
+  // ========= 正文区域背景补丁 (增强版) =========
+  const MAIN_CONTENT_CSS = `
+/* 1. 设置整体对话区域的背景色 */
+.chat-container {
+    background-color: var(--background) !important;
+}
+
+/* 2. 移除底部输入框区域的独立背景，使其与上层融合 */
+input-container,
+/* 同时处理输入框本身可能存在的背景 */
+rich-textarea > div {
+    background: transparent !important;
+    background-color: transparent !important;
+}
+
+/* 3. 移除对话气泡的独立背景和阴影，实现 Claude 的无边界感 */
+model-response,
+user-request,
+response-container,
+[class*="response-container"] { /* 通用规则，以防万一 */
+    background: transparent !important;
+    background-color: transparent !important;
+    box-shadow: none !important;
+}
+`;
+
 
   // ========= 按钮样式 =========
   const buttonCSS = `
@@ -286,11 +274,8 @@ svg, img, .mdc-*, [class*="mdc-"], [data-*="button"] {
 }
 @media (max-width: 768px){
   #claude-font-toggle{
-    top: 70px !important;
-    right: 14px !important;
-    padding: 6px 10px !important;
-    font-size: 11px !important;
-    min-width: 78px !important;
+    top: 70px !important; right: 14px !important; padding: 6px 10px !important;
+    font-size: 11px !important; min-width: 78px !important;
   }
 }
 `;
@@ -344,23 +329,13 @@ svg, img, .mdc-*, [class*="mdc-"], [data-*="button"] {
     toast.id = 'claude-font-toast';
     toast.textContent = message;
     toast.style.cssText = `
-      position: fixed !important;
-      top: 130px !important;
-      right: 20px !important;
-      z-index: 2147483647 !important;
-      background: color-mix(in oklch, var(--popover) 86%, black) !important;
-      color: var(--popover-foreground) !important;
-      padding: 8px 12px !important;
-      border-radius: 8px !important;
-      font-size: 13px !important;
-      font-family: system-ui, -apple-system, sans-serif !important;
-      box-shadow: var(--shadow-md) !important;
-      opacity: 0 !important;
-      transition: opacity 0.25s ease !important;
-      max-width: 240px !important;
-      white-space: nowrap !important;
-      line-height: 1.3 !important;
-      pointer-events: none !important;
+      position: fixed !important; top: 130px !important; right: 20px !important;
+      z-index: 2147483647 !important; background: color-mix(in oklch, var(--popover) 86%, black) !important;
+      color: var(--popover-foreground) !important; padding: 8px 12px !important; border-radius: 8px !important;
+      font-size: 13px !important; font-family: system-ui, -apple-system, sans-serif !important;
+      box-shadow: var(--shadow-md) !important; opacity: 0 !important;
+      transition: opacity 0.25s ease !important; max-width: 240px !important;
+      white-space: nowrap !important; line-height: 1.3 !important; pointer-events: none !important;
     `;
     document.body.appendChild(toast);
     requestAnimationFrame(() => {
@@ -404,13 +379,20 @@ svg, img, .mdc-*, [class*="mdc-"], [data-*="button"] {
       sidebarStyleElement.textContent = SIDEBAR_CSS;
       (document.head || document.documentElement).appendChild(sidebarStyleElement);
     }
-    console.log('✅ 主题、字体与侧栏已应用');
+    if (!mainContentStyleElement) {
+        mainContentStyleElement = document.createElement('style');
+        mainContentStyleElement.id = 'claude-main-content-style';
+        mainContentStyleElement.textContent = MAIN_CONTENT_CSS;
+        (document.head || document.documentElement).appendChild(mainContentStyleElement);
+    }
+    console.log('✅ 主题、字体、侧栏与正文背景已应用');
   }
 
   function removeClaudeFont() {
     if (styleElement) { styleElement.remove(); styleElement = null; }
     if (themeElement) { themeElement.remove(); themeElement = null; }
     if (sidebarStyleElement) { sidebarStyleElement.remove(); sidebarStyleElement = null; }
+    if (mainContentStyleElement) { mainContentStyleElement.remove(); mainContentStyleElement = null; }
     console.log('❌ Claude 字体和主题色已移除');
   }
 
@@ -494,6 +476,6 @@ svg, img, .mdc-*, [class*="mdc-"], [data-*="button"] {
     enable: () => { if (!isEnabled) toggleFont(); },
     disable: () => { if (isEnabled) toggleFont(); },
     status: () => isEnabled,
-    version: '1.6.5'
+    version: '1.6.8'
   };
 })();
