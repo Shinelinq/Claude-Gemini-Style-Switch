@@ -1,16 +1,14 @@
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.1.0
+// @version      1.2.3
 // @description  将 Gemini 官网界面变成 Claude 风格：衬线字体与主题色
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
 // @grant        GM_setValue
 // @grant        GM_getValue
-// @grant        GM_registerMenuCommand
-// @grant        GM_unregisterMenuCommand
-// @run-at       document-start
+// @run-at       document-end
 // @license      MIT
 // @noframes
 // ==/UserScript==
@@ -18,211 +16,132 @@
 (function () {
   'use strict';
 
-  // ===== Claude 风格变量 =====
+  // ===== 样式变量与主题色 =====
   const THEME_CSS = `
     :root {
-      --background: #F5F5F5; /* 背景色 */
-      --foreground: #333333; /* 文字色 */
-      --primary: #2D9CDB; /* 主题色 */
-      --secondary: #E0E0E0; /* 辅助色 */
-      --muted: #BDBDBD; /* 淡色 */
-      --accent: #FF8C00; /* 高亮色 */
-      --border: #E0E0E0; /* 边框色 */
-      --font-sans: 'Helvetica Neue', Arial, sans-serif;
-      --font-serif: 'Georgia', 'Times New Roman', serif;
-      --font-mono: 'Courier New', Courier, monospace;
-      --font-size-base: 18px; 
-      --font-weight-text: 500;
-      --font-weight-strong: 600;
-      --line-height: 1.75;
-      --radius: 0.5rem;
+      /* 颜色系统 */
+      --claude-primary: #D97706 !important;  /* 主色 */
+      --claude-primary-hover: #B45309 !important;  /* 主色悬停 */
+      --claude-primary-active: #92400E !important;  /* 主色点击 */
+      --claude-primary-light: #FED7AA !important;  /* 主色浅色 */
+      --claude-primary-focus: rgba(217, 119, 6, 0.15) !important;  /* 主色焦点 */
+
+      --claude-bg-primary: #FFFBF5 !important;  /* 背景色 */
+      --claude-bg-secondary: #FEF7ED !important;  /* 辅助背景 */
+      --claude-bg-card: #FFFFFF !important;  /* 卡片背景 */
+      --claude-bg-nav: #fdf9f0 !important;  /* 导航栏背景 */
+      --claude-bg-divider: #F3E8DB !important;  /* 分隔线背景 */
+
+      --claude-text-primary: #1F2937 !important;  /* 主要文字色 */
+      --claude-text-secondary: #6B7280 !important;  /* 次要文字色 */
+      --claude-text-muted: #9CA3AF !important;  /* 淡文字色 */
+      --claude-text-inverse: #FFFFFF !important;  /* 反转文字色 */
+
+      --claude-success: #059669 !important;  /* 成功状态 */
+      --claude-warning: #D97706 !important;  /* 警告状态 */
+      --claude-error: #DC2626 !important;  /* 错误状态 */
+      --claude-info: #2563EB !important;  /* 信息状态 */
+
+      --claude-shadow: rgba(0, 0, 0, 0.08) !important;  /* 阴影 */
+      --claude-shadow-hover: rgba(0, 0, 0, 0.12) !important;  /* 悬停阴影 */
+      --claude-hover-mask: rgba(0, 0, 0, 0.05) !important;  /* 悬停遮罩 */
+
+      /* 字体 */
+      --claude-font-serif: 'Sitka Text', Georgia, 'Times New Roman', serif !important;
+      --claude-font-sans: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif !important;
+      --claude-font-code: 'Cascadia Code', Consolas, 'Courier New', monospace !important;
+
+      /* 间距 */
+      --claude-space-1: 4px !important;
+      --claude-space-2: 8px !important;
+      --claude-space-3: 12px !important;
+      --claude-space-4: 16px !important;
+      --claude-space-6: 24px !important;
+      --claude-space-8: 32px !important;
+
+      /* 圆角 */
+      --claude-radius-sm: 6px !important;
+      --claude-radius-md: 8px !important;
+      --claude-radius-lg: 12px !important;
+      --claude-radius-xl: 16px !important;
+
+      /* 动画 */
+      --claude-duration-fast: 150ms !important;
+      --claude-duration-normal: 300ms !important;
+      --claude-ease: cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
-  `;
 
-  // ===== 配置 =====
-  const CONFIG = {
-    claudeFont: 'var(--font-serif)',
-    codeFont: 'var(--font-mono)',
-    claudeThemeColor: 'var(--primary)',
-    lineHeight: '1.75',
-    storageKey: 'gemini_claude_font_enabled',
-  };
-
-  // ===== 状态 =====
-  let isEnabled = GM_getValue(CONFIG.storageKey, false);
-  let themeElement = null;
-  let styleElement = null;
-  let btnStyleElement = null;
-  let toggleButton = null;
-  let menuCommandId = null;
-
-  // ===== 更大且更粗的字体样式 =====
-  const claudeFontCSS = `
-    body, p, div, span, article, section, h1, h2, h3, h4, h5, h6,
-    main, aside, header, footer, nav, ul, li, ol, dl, dt, dd,
-    table, thead, tbody, tr, td, th, caption,
-    form, fieldset, legend, label, input[type="text"], input[type="email"],
-    input[type="password"], input[type="search"], textarea, select, option {
-      font-family: ${CONFIG.claudeFont} !important;
-      font-size: var(--font-size-base) !important;
-      font-weight: var(--font-weight-text) !important;
-      line-height: ${CONFIG.lineHeight} !important;
-      color: var(--foreground);
+    /* 应用主题色 */
+    body {
+      background-color: var(--claude-bg-primary) !important;
+      color: var(--claude-text-primary) !important;
+      font-family: var(--claude-font-sans) !important;
     }
 
-    h1 { font-weight: 700 !important; }
-    h2 { font-weight: 600 !important; }
-    h3 { font-weight: 600 !important; }
-    h4, h5, h6 { font-weight: 600 !important; }
-    strong, b { font-weight: var(--font-weight-strong) !important; }
-    code, pre, .code, .mono, .highlight {
-      font-family: ${CONFIG.codeFont} !important;
+    a, button {
+      color: var(--claude-primary) !important;
     }
-  `;
 
-  // ===== 按钮样式 =====
-  const buttonCSS = `
-    #claude-font-toggle {
-      position: fixed !important;
-      top: 80px !important;
-      right: 20px !important;
-      z-index: 2147483646 !important;
-      background-color: var(--primary) !important;
-      color: white !important;
+    /* 按钮样式 */
+    button, .btn, .btn-primary {
+      background-color: var(--claude-primary) !important;
       border: none !important;
-      border-radius: var(--radius) !important;
-      padding: 8px 14px !important;
-      font-size: 12px !important;
-      font-weight: 600 !important;
+      border-radius: var(--claude-radius-md) !important;
+      color: var(--claude-text-inverse) !important;
+      padding: var(--claude-space-2) var(--claude-space-4) !important;
+      font-size: 16px !important;
+      box-shadow: var(--claude-shadow) !important;
       cursor: pointer !important;
-      box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1) !important;
+      transition: background-color var(--claude-duration-normal), box-shadow var(--claude-duration-normal) !important;
     }
 
-    #claude-font-toggle:hover {
-      background-color: var(--accent) !important;
+    button:hover, .btn-primary:hover {
+      background-color: var(--claude-primary-hover) !important;
+      box-shadow: var(--claude-shadow-hover) !important;
     }
 
-    #claude-font-toggle.disabled {
-      background-color: var(--muted) !important;
-      color: var(--muted) !important;
+    button:active, .btn-primary:active {
+      background-color: var(--claude-primary-active) !important;
+    }
+
+    /* 选中按钮样式 */
+    .btn-primary.selected, .btn.selected {
+      background-color: var(--claude-primary-light) !important;
+      color: var(--claude-primary-foreground) !important;
+      border: 2px solid var(--claude-primary) !important;
+    }
+
+    .card, .sidenav, .navbar, .sidebar {
+      background-color: var(--claude-bg-card) !important;
+    }
+
+    .navbar, .sidebar {
+      background-color: var(--claude-bg-nav) !important;
+    }
+
+    .text-muted {
+      color: var(--claude-text-muted) !important;
+    }
+
+    .divider {
+      background-color: var(--claude-bg-divider) !important;
     }
   `;
 
-  // ===== 创建并更新按钮 =====
-  function createToggleButton() {
-    if (toggleButton) return;
-
-    if (!btnStyleElement) {
-      btnStyleElement = document.createElement('style');
-      btnStyleElement.id = 'claude-font-button-style';
-      btnStyleElement.textContent = buttonCSS;
-      (document.head || document.documentElement).appendChild(btnStyleElement);
+  // ===== 将 CSS 样式注入页面 =====
+  function injectStyles() {
+    if (!document.querySelector('#claude-theme-style')) {
+      const styleElement = document.createElement('style');
+      styleElement.id = 'claude-theme-style';
+      styleElement.textContent = THEME_CSS;
+      document.head.appendChild(styleElement);
+      console.log('✅ Claude 样式已注入');
     }
-
-    toggleButton = document.createElement('button');
-    toggleButton.id = 'claude-font-toggle';
-    toggleButton.textContent = isEnabled ? 'Claude 字体启用' : '默认字体';
-    toggleButton.className = isEnabled ? '' : 'disabled';
-    toggleButton.title = isEnabled ? '切换到默认字体' : '切换到 Claude 字体';
-    toggleButton.addEventListener('click', toggleFont);
-    document.body.appendChild(toggleButton);
-
-    console.log('✅ 切换按钮已创建');
   }
 
-  // ===== 更新按钮状态 =====
-  function updateButtonState() {
-    if (!toggleButton) return;
-
-    toggleButton.textContent = isEnabled ? 'Claude 字体启用' : '默认字体';
-    toggleButton.className = isEnabled ? '' : 'disabled';
-    toggleButton.title = isEnabled ? '切换到默认字体' : '切换到 Claude 字体';
-  }
-
-  // ===== 应用或移除样式 =====
-  function applyClaudeFont() {
-    if (!themeElement) {
-      themeElement = document.createElement('style');
-      themeElement.id = 'claude-theme-style';
-      themeElement.textContent = THEME_CSS;
-      (document.head || document.documentElement).appendChild(themeElement);
-    }
-
-    if (!styleElement) {
-      styleElement = document.createElement('style');
-      styleElement.id = 'claude-font-style';
-      styleElement.textContent = claudeFontCSS;
-      (document.head || document.documentElement).appendChild(styleElement);
-    }
-
-    console.log('✅ Claude 字体和主题已应用');
-  }
-
-  function removeClaudeFont() {
-    if (styleElement) { styleElement.remove(); styleElement = null; }
-    if (themeElement) { themeElement.remove(); themeElement = null; }
-    console.log('❌ Claude 字体和主题已移除');
-  }
-
-  // ===== 切换功能 =====
-  function toggleFont() {
-    isEnabled = !isEnabled;
-    GM_setValue(CONFIG.storageKey, isEnabled);
-
-    if (isEnabled) {
-      applyClaudeFont();
-    } else {
-      removeClaudeFont();
-    }
-
-    updateButtonState();
-    console.log(`[Claude Font] ${isEnabled ? '启用' : '禁用'}`);
-  }
-
-  // ===== 初始化 =====
-  function init() {
-    console.log('🔧 Gemini Claude 风格字体转换插件启动...');
-    if (isEnabled) applyClaudeFont();
-
-    const createButtonWhenReady = () => {
-      if (document.body) {
-        createToggleButton();
-      } else {
-        setTimeout(createButtonWhenReady, 100);
-      }
-    };
-
-    if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => setTimeout(createButtonWhenReady, 300), { once: true });
-    } else {
-      setTimeout(createButtonWhenReady, 300);
-    }
-
-    // 监听 URL 变化
-    let lastUrl = location.href;
-    const urlObs = new MutationObserver(() => {
-      const url = location.href;
-      if (url !== lastUrl) {
-        lastUrl = url;
-        setTimeout(() => {
-          if (isEnabled && !styleElement) applyClaudeFont();
-        }, 800);
-      }
-    });
-    urlObs.observe(document, { subtree: true, childList: true });
-
-    console.log(`✅ 初始化完成 - 当前状态: ${isEnabled ? 'Claude 字体已启用' : '默认字体'}`);
-  }
-
-  // ===== 启动 =====
-  init();
-
-  // ===== 快捷键（Ctrl+Shift+F）切换 =====
-  document.addEventListener('keydown', (e) => {
-    if (e.ctrlKey && e.shiftKey && (e.code === 'KeyF' || e.key === 'F')) {
-      e.preventDefault();
-      toggleFont();
-    }
-  }, true);
+  // ===== 页面加载完成后注入样式 =====
+  window.addEventListener('load', () => {
+    injectStyles();
+  });
 
 })();
