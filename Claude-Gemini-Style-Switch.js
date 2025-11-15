@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.7.3
-// @description  v1.7.3: 切换为 tweakcn Claude 主题色（支持浅色/深色模式）
+// @version      1.7.4
+// @description  v1.7.4: 修复输入框消失问题，移除底部渐变
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -47,6 +47,20 @@
         --color-shadow: rgba(217, 119, 87, 0.1) !important;
         --color-shadow-md: rgba(217, 119, 87, 0.15) !important;
       }
+    }
+
+    .input-gradient,
+    input-container.input-gradient {
+      background: transparent !important;
+      background-image: none !important;
+    }
+
+    .input-gradient::before,
+    .input-gradient::after,
+    input-container.input-gradient::before,
+    input-container.input-gradient::after {
+      content: none !important;
+      display: none !important;
     }
 
     body, html, bard-app, chat-app, main, chat-window, zero-state-v2 {
