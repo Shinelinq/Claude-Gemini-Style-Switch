@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.7.2
-// @description  v1.7.2: 更新为 Claude 标准主题配色，优化色彩变量系统
+// @version      1.7.3
+// @description  v1.7.3: 切换为 tweakcn Claude 主题色（支持浅色/深色模式）
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -18,16 +18,35 @@
 
   const CSS = `
     :root {
-      --color-primary: #D97706 !important;
-      --color-primary-dark: #B45309 !important;
-      --color-bg: #FFFBEB !important;
-      --color-bg-secondary: #FEF3C7 !important;
-      --color-bg-tertiary: #FDE68A !important;
-      --color-fg: #78350F !important;
-      --color-fg-muted: #92400E !important;
-      --color-border: #FDE68A !important;
-      --color-shadow: rgba(217, 119, 6, 0.1) !important;
-      --color-shadow-md: rgba(217, 119, 6, 0.15) !important;
+      --color-primary: #c96442 !important;
+      --color-primary-dark: #b05730 !important;
+      --color-bg: #faf9f5 !important;
+      --color-bg-secondary: #e9e6dc !important;
+      --color-bg-tertiary: #ede9de !important;
+      --color-fg: #3d3929 !important;
+      --color-fg-muted: #83827d !important;
+      --color-border: #dad9d4 !important;
+      --color-input: #b4b2a7 !important;
+      --color-card: #faf9f5 !important;
+      --color-shadow: rgba(201, 100, 66, 0.1) !important;
+      --color-shadow-md: rgba(201, 100, 66, 0.15) !important;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --color-primary: #d97757 !important;
+        --color-primary-dark: #b05730 !important;
+        --color-bg: #262624 !important;
+        --color-bg-secondary: #1b1b19 !important;
+        --color-bg-tertiary: #1a1915 !important;
+        --color-fg: #c3c0b6 !important;
+        --color-fg-muted: #b7b5a9 !important;
+        --color-border: #3e3e38 !important;
+        --color-input: #52514a !important;
+        --color-card: #262624 !important;
+        --color-shadow: rgba(217, 119, 87, 0.1) !important;
+        --color-shadow-md: rgba(217, 119, 87, 0.15) !important;
+      }
     }
 
     body, html, bard-app, chat-app, main, chat-window, zero-state-v2 {
@@ -36,7 +55,7 @@
     }
 
     .top-bar-actions, header, mat-toolbar {
-      background: white !important;
+      background: var(--color-card) !important;
       border-bottom: 1px solid var(--color-border) !important;
       box-shadow: 0 1px 3px var(--color-shadow) !important;
     }
@@ -78,7 +97,7 @@
     }
 
     .message-content, message-content {
-      background: white !important;
+      background: var(--color-card) !important;
       border: 1px solid var(--color-border) !important;
       border-radius: 16px !important;
       padding: 20px !important;
@@ -93,7 +112,7 @@
     }
 
     .input-area-container, input-area-v2 .text-input-field {
-      background: white !important;
+      background: var(--color-card) !important;
       border: 2px solid var(--color-border) !important;
       border-radius: 20px !important;
       padding: 12px 16px !important;
@@ -143,7 +162,7 @@
     }
 
     .intent-card, .card, mat-card {
-      background: white !important;
+      background: var(--color-card) !important;
       border: 2px solid var(--color-border) !important;
       border-radius: 14px !important;
       padding: 16px !important;
@@ -212,7 +231,7 @@
       width: 100% !important;
       border-collapse: collapse !important;
       margin: 16px 0 !important;
-      background: white !important;
+      background: var(--color-card) !important;
       border-radius: 8px !important;
       overflow: hidden !important;
       box-shadow: 0 1px 3px var(--color-shadow) !important;
