@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.6.0
-// @description  v1.6.0: 添加交互效果（悬停/点击/过渡动画）
+// @version      1.7.0
+// @description  v1.7.0: 细节优化（代码块/引用/列表/表格样式）
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -30,31 +30,23 @@
       --claude-shadow-md: rgba(217, 119, 6, 0.15) !important;
     }
 
-    /* 全局 */
     body, html, bard-app, chat-app, main { background: var(--claude-bg) !important; color: var(--claude-text) !important; }
     .top-bar-actions, header, mat-toolbar { background: white !important; border-bottom: 1px solid var(--claude-border) !important; box-shadow: 0 1px 3px var(--claude-shadow) !important; }
-
-    /* 布局 */
     .chat-container, .chat-history { max-width: 900px !important; margin: 0 auto !important; padding: 32px 24px !important; }
     bard-sidenav, side-navigation-v2, mat-sidenav { width: 280px !important; background: var(--claude-bg-secondary) !important; }
     .input-area-container { max-width: 900px !important; margin: 0 auto !important; }
 
-    /* 侧边栏 - 交互效果 */
     .side-nav-action-button, .conversation, .nav-item {
       background: transparent !important;
       border-radius: 10px !important;
       padding: 10px 12px !important;
       margin: 4px 8px !important;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-      cursor: pointer !important;
     }
     .side-nav-action-button:hover, .conversation:hover {
       background: var(--claude-bg-tertiary) !important;
       transform: translateX(6px) !important;
       box-shadow: 0 2px 8px var(--claude-shadow) !important;
-    }
-    .side-nav-action-button:active, .conversation:active {
-      transform: translateX(4px) scale(0.98) !important;
     }
     .conversation.selected {
       background: var(--claude-bg-tertiary) !important;
@@ -62,7 +54,6 @@
       font-weight: 600 !important;
     }
 
-    /* 消息 - 淡入效果 */
     .message-content, message-content {
       background: white !important;
       border: 1px solid var(--claude-border) !important;
@@ -77,7 +68,6 @@
       to { opacity: 1; transform: translateY(0); }
     }
 
-    /* 输入框 - 焦点效果 */
     .input-area-container {
       background: white !important;
       border: 2px solid var(--claude-border) !important;
@@ -92,7 +82,6 @@
       transform: translateY(-2px) !important;
     }
 
-    /* 按钮 - 悬停/点击效果 */
     .mat-mdc-button, button[mat-button] {
       background: var(--claude-primary) !important;
       color: white !important;
@@ -107,12 +96,7 @@
       transform: translateY(-3px) !important;
       box-shadow: 0 6px 16px var(--claude-shadow-md) !important;
     }
-    .mat-mdc-button:active {
-      transform: translateY(-1px) scale(0.98) !important;
-      box-shadow: 0 2px 8px var(--claude-shadow) !important;
-    }
 
-    /* 发送按钮 - 脉冲效果 */
     .send-button {
       background: var(--claude-primary) !important;
       border-radius: 50% !important;
@@ -125,16 +109,8 @@
       transform: scale(1.15) rotate(5deg) !important;
       box-shadow: 0 4px 12px var(--claude-shadow-md) !important;
     }
-    .send-button:active:not([disabled]) {
-      transform: scale(1.05) !important;
-    }
-    .send-button[disabled] {
-      background: var(--claude-border) !important;
-      opacity: 0.5 !important;
-      cursor: not-allowed !important;
-    }
+    .send-button[disabled] { background: var(--claude-border) !important; opacity: 0.5 !important; }
 
-    /* 卡片 - 悬停效果 */
     .intent-card, .card, mat-card {
       background: white !important;
       border: 2px solid var(--claude-border) !important;
@@ -142,18 +118,103 @@
       padding: 16px !important;
       box-shadow: 0 2px 6px var(--claude-shadow) !important;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
-      cursor: pointer !important;
     }
     .intent-card:hover, .card:hover {
       border-color: var(--claude-primary) !important;
       box-shadow: 0 8px 20px var(--claude-shadow-md) !important;
       transform: translateY(-6px) scale(1.03) !important;
     }
-    .intent-card:active, .card:active {
-      transform: translateY(-3px) scale(1.01) !important;
+
+    /* 代码块 */
+    pre, .code-block, .highlight {
+      background: var(--claude-bg-secondary) !important;
+      border: 1px solid var(--claude-border) !important;
+      border-radius: 8px !important;
+      padding: 16px !important;
+      margin: 16px 0 !important;
+      overflow-x: auto !important;
+      font-family: 'Fira Code', 'Consolas', monospace !important;
+      font-size: 14px !important;
+      line-height: 1.6 !important;
+    }
+    code {
+      background: var(--claude-bg-secondary) !important;
+      color: var(--claude-text) !important;
+      padding: 2px 6px !important;
+      border-radius: 4px !important;
+      font-family: 'Fira Code', 'Consolas', monospace !important;
+      font-size: 14px !important;
+    }
+    pre code {
+      background: transparent !important;
+      padding: 0 !important;
     }
 
-    /* 链接 - 下划线动画 */
+    /* 引用 */
+    blockquote {
+      border-left: 4px solid var(--claude-primary) !important;
+      background: var(--claude-bg-secondary) !important;
+      padding: 12px 16px !important;
+      margin: 16px 0 !important;
+      border-radius: 0 8px 8px 0 !important;
+      color: var(--claude-text-muted) !important;
+      font-style: italic !important;
+    }
+
+    /* 列表 */
+    ul, ol {
+      padding-left: 24px !important;
+      margin: 12px 0 !important;
+    }
+    li {
+      margin: 8px 0 !important;
+      line-height: 1.7 !important;
+    }
+    ul li::marker {
+      color: var(--claude-primary) !important;
+    }
+    ol li::marker {
+      color: var(--claude-primary) !important;
+      font-weight: 600 !important;
+    }
+
+    /* 表格 */
+    table {
+      width: 100% !important;
+      border-collapse: collapse !important;
+      margin: 16px 0 !important;
+      background: white !important;
+      border-radius: 8px !important;
+      overflow: hidden !important;
+      box-shadow: 0 1px 3px var(--claude-shadow) !important;
+    }
+    th {
+      background: var(--claude-bg-secondary) !important;
+      color: var(--claude-text) !important;
+      font-weight: 600 !important;
+      padding: 12px !important;
+      text-align: left !important;
+      border-bottom: 2px solid var(--claude-border) !important;
+    }
+    td {
+      padding: 12px !important;
+      border-bottom: 1px solid var(--claude-border) !important;
+    }
+    tr:last-child td {
+      border-bottom: none !important;
+    }
+    tr:hover {
+      background: var(--claude-bg) !important;
+    }
+
+    /* 分隔线 */
+    hr {
+      border: none !important;
+      border-top: 2px solid var(--claude-border) !important;
+      margin: 24px 0 !important;
+    }
+
+    /* 链接 */
     a {
       color: var(--claude-primary) !important;
       text-decoration: none !important;
@@ -170,24 +231,15 @@
       background: var(--claude-primary-dark) !important;
       transition: width 0.3s ease !important;
     }
-    a:hover::after {
-      width: 100% !important;
-    }
+    a:hover::after { width: 100% !important; }
 
-    /* 滚动条 - 平滑过渡 */
     ::-webkit-scrollbar { width: 10px !important; }
     ::-webkit-scrollbar-track { background: var(--claude-bg-secondary) !important; }
-    ::-webkit-scrollbar-thumb {
-      background: var(--claude-primary) !important;
-      border-radius: 5px !important;
-      transition: background 0.2s ease !important;
-    }
+    ::-webkit-scrollbar-thumb { background: var(--claude-primary) !important; border-radius: 5px !important; }
     ::-webkit-scrollbar-thumb:hover { background: var(--claude-primary-dark) !important; }
 
-    /* 字体 */
-    h1, h2, h3, h4, h5, h6 { font-family: 'Georgia', serif !important; font-weight: 600 !important; }
+    h1, h2, h3, h4, h5, h6 { font-family: 'Georgia', serif !important; font-weight: 600 !important; margin: 20px 0 12px !important; }
     body, p, div, span { font-family: 'Inter', Arial, sans-serif !important; font-size: 16px !important; line-height: 1.6 !important; }
-    code, pre { font-family: 'Fira Code', monospace !important; background: var(--claude-bg-secondary) !important; padding: 2px 6px !important; border-radius: 4px !important; }
   `;
 
   const BTN_CSS = `
@@ -211,9 +263,6 @@
       background: var(--claude-primary-dark) !important;
       transform: translateY(-3px) scale(1.05) !important;
       box-shadow: 0 6px 16px var(--claude-shadow-md) !important;
-    }
-    #claude-toggle:active {
-      transform: translateY(-1px) scale(1.02) !important;
     }
     #claude-toggle.off { background: #9CA3AF !important; }
   `;
