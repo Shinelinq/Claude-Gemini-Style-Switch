@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.7.0
-// @description  v1.7.0: 细节优化（代码块/引用/列表/表格样式）
+// @version      1.7.1
+// @description  v1.7.1: 修复字体样式（恢复完整选择器）
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -125,7 +125,6 @@
       transform: translateY(-6px) scale(1.03) !important;
     }
 
-    /* 代码块 */
     pre, .code-block, .highlight {
       background: var(--claude-bg-secondary) !important;
       border: 1px solid var(--claude-border) !important;
@@ -150,7 +149,6 @@
       padding: 0 !important;
     }
 
-    /* 引用 */
     blockquote {
       border-left: 4px solid var(--claude-primary) !important;
       background: var(--claude-bg-secondary) !important;
@@ -161,7 +159,6 @@
       font-style: italic !important;
     }
 
-    /* 列表 */
     ul, ol {
       padding-left: 24px !important;
       margin: 12px 0 !important;
@@ -178,7 +175,6 @@
       font-weight: 600 !important;
     }
 
-    /* 表格 */
     table {
       width: 100% !important;
       border-collapse: collapse !important;
@@ -207,14 +203,12 @@
       background: var(--claude-bg) !important;
     }
 
-    /* 分隔线 */
     hr {
       border: none !important;
       border-top: 2px solid var(--claude-border) !important;
       margin: 24px 0 !important;
     }
 
-    /* 链接 */
     a {
       color: var(--claude-primary) !important;
       text-decoration: none !important;
@@ -238,8 +232,29 @@
     ::-webkit-scrollbar-thumb { background: var(--claude-primary) !important; border-radius: 5px !important; }
     ::-webkit-scrollbar-thumb:hover { background: var(--claude-primary-dark) !important; }
 
-    h1, h2, h3, h4, h5, h6 { font-family: 'Georgia', serif !important; font-weight: 600 !important; margin: 20px 0 12px !important; }
-    body, p, div, span { font-family: 'Inter', Arial, sans-serif !important; font-size: 16px !important; line-height: 1.6 !important; }
+    h1, h2, h3, h4, h5, h6, .user-greeting-text, .conversation-title, .gds-headline-l, .gds-headline-m, .gds-headline-s {
+      font-family: 'Georgia', 'Times New Roman', serif !important;
+      font-weight: 600 !important;
+      line-height: 1.4 !important;
+      margin: 20px 0 12px !important;
+    }
+    body, p, div, span, .message-content, .ql-editor, .model-response-text, .gds-body-l, .gds-body-m {
+      font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif !important;
+      font-size: 16px !important;
+      font-weight: 400 !important;
+      line-height: 1.6 !important;
+    }
+    code, pre, .code-block, .highlight, .ql-code-block, .ql-syntax {
+      font-family: 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+    }
+    button, input, textarea, select {
+      font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif !important;
+      font-size: 14px !important;
+      font-weight: 500 !important;
+    }
+    mat-icon, .material-icons, .google-symbols {
+      font-family: 'Material Icons', 'Google Symbols' !important;
+    }
   `;
 
   const BTN_CSS = `
