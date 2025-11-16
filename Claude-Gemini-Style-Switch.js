@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.8.0
-// @description  v1.8.0: 全面优化内容区组件(代码/表格/引用/思考)样式
+// @version      1.8.1
+// @description  v1.8.1: 隐藏 Gemini 头像栏,优化回复卡片布局
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -230,7 +230,10 @@
       transform: translateY(-6px) scale(1.03) !important;
     }
 
-    /* Model Thoughts */
+    .avatar-gutter {
+      display: none !important;
+    }
+
     model-thoughts,
     .model-thoughts {
       display: block !important;
@@ -245,7 +248,6 @@
       color: var(--color-fg-muted) !important;
     }
 
-    /* Code Block */
     code-block,
     .code-block {
       display: block !important;
@@ -262,7 +264,6 @@
       border-bottom: 1px solid var(--color-border) !important;
     }
 
-    /* Table Block */
     table-block,
     .table-block {
       display: block !important;
