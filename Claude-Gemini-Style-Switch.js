@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.7.4
-// @description  v1.7.4: 修复输入框消失问题，移除底部渐变
+// @version      1.7.5
+// @description  v1.7.5: 修复侧边栏对话列表左侧空白问题，优化布局对齐
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -80,6 +80,19 @@
       padding: 32px 24px !important;
     }
 
+    .chat-history {
+      padding: 0 !important;
+      padding-right: 22px !important;
+    }
+
+    conversations-list[data-test-id="all-conversations"] {
+      margin-top: 10px !important;
+    }
+
+    conversations-list .title-container .title {
+      margin: 0px !important;
+    }
+
     bard-sidenav, side-navigation-v2, mat-sidenav {
       width: 280px !important;
       background: var(--color-bg-secondary) !important;
@@ -96,6 +109,21 @@
       padding: 10px 12px !important;
       margin: 4px 8px !important;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+    }
+
+    .side-nav-action-button {
+      margin: 0 !important;
+      padding-left: 10px !important;
+    }
+
+    .conversation-items-container {
+      display: flex !important;
+      align-items: center !important;
+    }
+
+    .conversation {
+      flex: 1 !important;
+      min-width: 0 !important;
     }
 
     .side-nav-action-button:hover, .conversation:hover {
