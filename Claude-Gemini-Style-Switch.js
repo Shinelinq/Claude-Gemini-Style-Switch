@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.7.8
-// @description  v1.7.8: 优化侧边栏滚动渐变效果，适配 Claude 风格主题色
+// @version      1.7.9
+// @description  v1.7.9: 优化滚动条交互，实现悬停显示效果
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -31,6 +31,8 @@
       --color-shadow: rgba(201, 100, 66, 0.1) !important;
       --color-shadow-md: rgba(201, 100, 66, 0.15) !important;
       --bard-sidenav-open-width: 280px;
+      --scrollbar-thumb-hover: rgba(201, 100, 66, 0.6);
+      --scrollbar-thumb-active: rgba(201, 100, 66, 0.9);
     }
 
     @media (prefers-color-scheme: dark) {
@@ -47,6 +49,8 @@
         --color-card: #262624 !important;
         --color-shadow: rgba(217, 119, 87, 0.1) !important;
         --color-shadow-md: rgba(217, 119, 87, 0.15) !important;
+        --scrollbar-thumb-hover: rgba(217, 119, 87, 0.6);
+        --scrollbar-thumb-active: rgba(217, 119, 87, 0.9);
       }
     }
 
@@ -352,6 +356,18 @@
 
     ::-webkit-scrollbar-thumb:hover {
       background: var(--color-primary-dark) !important;
+    }
+
+    infinite-scroller::-webkit-scrollbar-thumb {
+      background: transparent !important;
+    }
+
+    infinite-scroller:hover::-webkit-scrollbar-thumb {
+      background: var(--scrollbar-thumb-hover) !important;
+    }
+
+    infinite-scroller::-webkit-scrollbar-thumb:hover {
+      background: var(--scrollbar-thumb-active) !important;
     }
 
     h1, h2, h3, h4, h5, h6, .user-greeting-text, .conversation-title, .gds-headline-l, .gds-headline-m, .gds-headline-s {
