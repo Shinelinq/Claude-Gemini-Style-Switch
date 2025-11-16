@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.8.1
-// @description  v1.8.1: 隐藏 Gemini 头像栏,优化回复卡片布局
+// @version      1.8.3
+// @description  v1.8.3: 修复思路卡片合并的 CSS 特异性冲突
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -239,13 +239,19 @@
       display: block !important;
       background: var(--color-bg-secondary) !important;
       border: 1px solid var(--color-border) !important;
-      border-radius: 12px !important;
+      border-radius: 12px 12px 0 0 !important;
       padding: 16px !important;
-      margin: 16px 0 !important;
+      margin: 0 !important;
     }
 
     .thoughts-content {
       color: var(--color-fg-muted) !important;
+    }
+
+    message-content.has-thoughts {
+      border-radius: 0 0 16px 16px !important;
+      border-top: none !important;
+      margin-top: 0 !important;
     }
 
     code-block,
