@@ -230,47 +230,64 @@
       transform: translateY(-6px) scale(1.03) !important;
     }
 
-    model-thoughts {
+    /* Model Thoughts */
+    model-thoughts,
+    .model-thoughts {
       display: block !important;
       background: var(--color-bg-secondary) !important;
       border: 1px solid var(--color-border) !important;
       border-radius: 12px !important;
       padding: 16px !important;
       margin: 16px 0 !important;
-      font-style: italic !important;
+    }
+
+    .thoughts-content {
       color: var(--color-fg-muted) !important;
     }
 
-    model-thoughts .thoughts-content {
-      background: transparent !important;
+    /* Code Block */
+    code-block,
+    .code-block {
+      display: block !important;
+      background: var(--color-bg-secondary) !important;
+      border: 1px solid var(--color-border) !important;
+      border-radius: 8px !important;
+      overflow: hidden !important;
+      margin: 16px 0 !important;
     }
 
-    model-thoughts .markdown p {
-      margin: 8px 0 !important;
-      line-height: 1.6 !important;
+    .code-block-decoration {
+      background: var(--color-bg-tertiary) !important;
+      padding: 8px 16px !important;
+      border-bottom: 1px solid var(--color-border) !important;
     }
 
-    code-block, .code-block {
+    /* Table Block */
+    table-block,
+    .table-block {
       display: block !important;
       margin: 16px 0 !important;
     }
 
-    code-block pre, .code-block pre {
+    .table-content table {
+      border-radius: 8px !important;
+      overflow: hidden !important;
+    }
+
+    .table-content thead td {
+      background: var(--color-bg-secondary) !important;
+    }
+
+    pre, .highlight {
       background: var(--color-bg-secondary) !important;
       border: 1px solid var(--color-border) !important;
       border-radius: 8px !important;
       padding: 16px !important;
+      margin: 16px 0 !important;
       overflow-x: auto !important;
       font-family: 'Fira Code', 'Consolas', monospace !important;
       font-size: 14px !important;
       line-height: 1.6 !important;
-    }
-
-    code-block code, .code-block code {
-      background: transparent !important;
-      color: var(--color-fg) !important;
-      font-family: 'Fira Code', 'Consolas', monospace !important;
-      font-size: 14px !important;
     }
 
     code {
@@ -287,41 +304,29 @@
       padding: 0 !important;
     }
 
-    table-block, .table-block {
-      display: block !important;
-      margin: 16px 0 !important;
-      overflow-x: auto !important;
-    }
-
-    table-block table, .table-block table {
-      width: 100% !important;
-      border-collapse: collapse !important;
-      background: var(--color-card) !important;
-      border-radius: 8px !important;
-      overflow: hidden !important;
-      box-shadow: 0 1px 3px var(--color-shadow) !important;
-    }
-
-    table-block th, .table-block th {
+    blockquote {
+      border-left: 4px solid var(--color-primary) !important;
       background: var(--color-bg-secondary) !important;
-      color: var(--color-fg) !important;
+      padding: 12px 16px !important;
+      margin: 16px 0 !important;
+      border-radius: 0 8px 8px 0 !important;
+      color: var(--color-fg-muted) !important;
+      font-style: italic !important;
+    }
+
+    ul, ol {
+      padding-left: 24px !important;
+      margin: 12px 0 !important;
+    }
+
+    li {
+      margin: 8px 0 !important;
+      line-height: 1.7 !important;
+    }
+
+    ul li::marker, ol li::marker {
+      color: var(--color-primary) !important;
       font-weight: 600 !important;
-      padding: 12px !important;
-      text-align: left !important;
-      border-bottom: 2px solid var(--color-border) !important;
-    }
-
-    table-block td, .table-block td {
-      padding: 12px !important;
-      border-bottom: 1px solid var(--color-border) !important;
-    }
-
-    table-block tr:last-child td, .table-block tr:last-child td {
-      border-bottom: none !important;
-    }
-
-    table-block tr:hover, .table-block tr:hover {
-      background: var(--color-bg) !important;
     }
 
     table {
@@ -356,43 +361,6 @@
       background: var(--color-bg) !important;
     }
 
-    blockquote {
-      border-left: 4px solid var(--color-primary) !important;
-      background: var(--color-bg-secondary) !important;
-      padding: 12px 16px !important;
-      margin: 16px 0 !important;
-      border-radius: 0 8px 8px 0 !important;
-      color: var(--color-fg-muted) !important;
-      font-style: italic !important;
-    }
-
-    .markdown h1, .message-content h1, message-content h1 {
-      font-family: 'Georgia', 'Times New Roman', serif !important;
-      font-size: 28px !important;
-      font-weight: 600 !important;
-      line-height: 1.4 !important;
-      margin: 24px 0 16px !important;
-      color: var(--color-fg) !important;
-    }
-
-    .markdown h2, .message-content h2, message-content h2 {
-      font-family: 'Georgia', 'Times New Roman', serif !important;
-      font-size: 24px !important;
-      font-weight: 600 !important;
-      line-height: 1.4 !important;
-      margin: 20px 0 12px !important;
-      color: var(--color-fg) !important;
-    }
-
-    .markdown h3, .message-content h3, message-content h3 {
-      font-family: 'Georgia', 'Times New Roman', serif !important;
-      font-size: 20px !important;
-      font-weight: 600 !important;
-      line-height: 1.4 !important;
-      margin: 16px 0 10px !important;
-      color: var(--color-fg) !important;
-    }
-
     hr {
       border: none !important;
       border-top: 2px solid var(--color-border) !important;
@@ -419,21 +387,6 @@
 
     a:hover::after {
       width: 100% !important;
-    }
-
-    ul, ol {
-      padding-left: 24px !important;
-      margin: 12px 0 !important;
-    }
-
-    li {
-      margin: 8px 0 !important;
-      line-height: 1.7 !important;
-    }
-
-    ul li::marker, ol li::marker {
-      color: var(--color-primary) !important;
-      font-weight: 600 !important;
     }
 
     ::-webkit-scrollbar {
