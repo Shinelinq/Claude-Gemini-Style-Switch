@@ -1,9 +1,8 @@
-
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.8.4
-// @description  v1.8.4: 修复思路卡片宽度不匹配和空隙问题
+// @version      1.8.7
+// @description  v1.8.7: 修复思路卡片内部按钮与正文间距
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -253,8 +252,20 @@
       margin: 0 !important;
     }
 
+    model-thoughts message-content,
+    model-thoughts .message-content {
+      background: transparent !important;
+      border: none !important;
+      border-radius: 0 !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      box-shadow: none !important;
+      animation: none !important;
+    }
+
     .thoughts-content {
       color: var(--color-fg-muted) !important;
+      margin-top: 12px !important;
     }
 
     message-content.has-thoughts {
