@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.7.7
-// @description  v1.7.7: 修复侧边栏收起功能，移除强制宽度限制
+// @version      1.7.8
+// @description  v1.7.8: 优化侧边栏滚动渐变效果，适配 Claude 风格主题色
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -62,6 +62,14 @@
     input-container.input-gradient::after {
       content: none !important;
       display: none !important;
+    }
+
+    .top-gradient-container .top-gradient {
+      background: linear-gradient(to bottom, var(--color-bg-secondary), transparent) !important;
+    }
+
+    .bottom-gradient-container .bottom-gradient {
+      background: linear-gradient(to top, var(--color-bg-secondary), transparent) !important;
     }
 
     body, html, bard-app, chat-app, main, chat-window, zero-state-v2 {
