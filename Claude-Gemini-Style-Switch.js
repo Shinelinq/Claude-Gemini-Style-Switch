@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.8.7
-// @description  v1.8.7: 修复思路卡片内部按钮与正文间距
+// @version      1.8.8
+// @description  v1.8.8: 修复回复卡片底部与按钮栏之间的空隙
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -157,7 +157,7 @@
       border: 1px solid var(--color-border) !important;
       border-radius: 16px !important;
       padding: 20px !important;
-      margin: 20px 0 !important;
+      margin: 20px 0 0 0 !important;
       box-shadow: 0 1px 3px var(--color-shadow) !important;
       animation: fadeInUp 0.4s ease-out !important;
     }
@@ -236,6 +236,10 @@
       display: none !important;
     }
 
+    .response-container {
+      padding-bottom: 0 !important;
+    }
+
     .response-container-content {
       padding-top: 0 !important;
     }
@@ -249,7 +253,7 @@
       border: 1px solid var(--color-border) !important;
       border-radius: 12px 12px 0 0 !important;
       padding: 16px !important;
-      margin: 0 !important;
+      margin: 20px 0 0 0 !important;
     }
 
     model-thoughts message-content,
@@ -271,7 +275,7 @@
     message-content.has-thoughts {
       border-radius: 0 0 16px 16px !important;
       border-top: none !important;
-      margin: 0 0 20px 0 !important;
+      margin: 0 !important;
     }
 
     code-block,
