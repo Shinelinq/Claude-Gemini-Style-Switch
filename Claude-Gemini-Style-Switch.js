@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.7.5
-// @description  v1.7.5: 修复侧边栏对话列表左侧空白问题，优化布局对齐
+// @version      1.7.6
+// @description  v1.7.6: 提高侧边栏 hover/selected 状态的背景色对比度
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -22,7 +22,7 @@
       --color-primary-dark: #b05730 !important;
       --color-bg: #faf9f5 !important;
       --color-bg-secondary: #e9e6dc !important;
-      --color-bg-tertiary: #ede9de !important;
+      --color-bg-tertiary: #dad5c9 !important;
       --color-fg: #3d3929 !important;
       --color-fg-muted: #83827d !important;
       --color-border: #dad9d4 !important;
@@ -38,7 +38,7 @@
         --color-primary-dark: #b05730 !important;
         --color-bg: #262624 !important;
         --color-bg-secondary: #1b1b19 !important;
-        --color-bg-tertiary: #1a1915 !important;
+        --color-bg-tertiary: #2f2f2a !important;
         --color-fg: #c3c0b6 !important;
         --color-fg-muted: #b7b5a9 !important;
         --color-border: #3e3e38 !important;
