@@ -1,8 +1,9 @@
+
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.8.3
-// @description  v1.8.3: 修复思路卡片合并的 CSS 特异性冲突
+// @version      1.8.4
+// @description  v1.8.4: 修复思路卡片宽度不匹配和空隙问题
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -151,6 +152,8 @@
     }
 
     .message-content, message-content {
+      width: 100% !important;
+      box-sizing: border-box !important;
       background: var(--color-card) !important;
       border: 1px solid var(--color-border) !important;
       border-radius: 16px !important;
@@ -234,9 +237,15 @@
       display: none !important;
     }
 
+    .response-container-content {
+      padding-top: 0 !important;
+    }
+
     model-thoughts,
     .model-thoughts {
       display: block !important;
+      width: 100% !important;
+      box-sizing: border-box !important;
       background: var(--color-bg-secondary) !important;
       border: 1px solid var(--color-border) !important;
       border-radius: 12px 12px 0 0 !important;
@@ -251,7 +260,7 @@
     message-content.has-thoughts {
       border-radius: 0 0 16px 16px !important;
       border-top: none !important;
-      margin-top: 0 !important;
+      margin: 0 0 20px 0 !important;
     }
 
     code-block,
