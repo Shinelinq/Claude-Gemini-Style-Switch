@@ -1,8 +1,9 @@
+
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.8.8
-// @description  v1.8.8: 修复回复卡片底部与按钮栏之间的空隙
+// @version      1.9.0
+// @description  v1.9.0: 优化回复卡片页脚容器样式和布局
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -157,7 +158,7 @@
       border: 1px solid var(--color-border) !important;
       border-radius: 16px !important;
       padding: 20px !important;
-      margin: 20px 0 0 0 !important;
+      margin: 0 !important;
       box-shadow: 0 1px 3px var(--color-shadow) !important;
       animation: fadeInUp 0.4s ease-out !important;
     }
@@ -276,6 +277,34 @@
       border-radius: 0 0 16px 16px !important;
       border-top: none !important;
       margin: 0 !important;
+    }
+
+    .actions-container-v2,
+    .buttons-container-v2 {
+      background: transparent !important;
+      margin: 12px 0 !important;
+    }
+
+    .buttons-container-v2 {
+      padding-left: 12px !important;
+    }
+
+    .buttons-container-v2::before {
+      display: none !important;
+    }
+
+    message-actions button,
+    message-actions .mat-mdc-icon-button,
+    message-actions .mat-mdc-button {
+      margin: 0 4px !important;
+      border-radius: 8px !important;
+      transition: all 0.2s ease !important;
+    }
+
+    message-actions button:hover,
+    message-actions .mat-mdc-icon-button:hover,
+    message-actions .mat-mdc-button:hover {
+      background: var(--color-bg-tertiary) !important;
     }
 
     code-block,
