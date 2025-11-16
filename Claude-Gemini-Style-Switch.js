@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.7.6
-// @description  v1.7.6: 提高侧边栏 hover/selected 状态的背景色对比度
+// @version      1.7.7
+// @description  v1.7.7: 修复侧边栏收起功能，移除强制宽度限制
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -30,6 +30,7 @@
       --color-card: #faf9f5 !important;
       --color-shadow: rgba(201, 100, 66, 0.1) !important;
       --color-shadow-md: rgba(201, 100, 66, 0.15) !important;
+      --bard-sidenav-open-width: 280px;
     }
 
     @media (prefers-color-scheme: dark) {
@@ -94,7 +95,6 @@
     }
 
     bard-sidenav, side-navigation-v2, mat-sidenav {
-      width: 280px !important;
       background: var(--color-bg-secondary) !important;
     }
 
