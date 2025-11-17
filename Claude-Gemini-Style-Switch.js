@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.9.5
-// @description  v1.9.5: 增大正文字体至18px,优化行高以匹配Claude风格
+// @version      1.9.6
+// @description  v1.9.6: 优化用户提问样式,统一字体和卡片风格
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -151,6 +151,31 @@
       background: var(--color-bg-tertiary) !important;
       border-left: 3px solid var(--color-primary) !important;
       font-weight: 600 !important;
+    }
+
+    user-query,
+    .user-query-container,
+    .user-query-bubble-container {
+      display: block !important;
+      width: 100% !important;
+    }
+
+    .user-query-bubble-with-background {
+      display: block !important;
+      background: var(--color-card) !important;
+      border: 1px solid var(--color-border) !important;
+      border-radius: 16px !important;
+      padding: 20px !important;
+      box-shadow: 0 1px 3px var(--color-shadow) !important;
+    }
+
+    .query-text,
+    .query-text-line {
+      font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif !important;
+      font-size: 18px !important;
+      font-weight: 400 !important;
+      line-height: 1.75 !important;
+      color: var(--color-fg) !important;
     }
 
     .message-content, message-content {
