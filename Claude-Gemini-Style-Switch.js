@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.9.1
-// @description  v1.9.1: 修复正文卡片背景色与页面背景色相同的问题,恢复卡片视觉层次
+// @version      1.9.2
+// @description  v1.9.2: 修复全局滚动条样式冲突,实现自动隐藏效果
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -448,25 +448,17 @@
       width: 100% !important;
     }
 
-    ::-webkit-scrollbar {
+    infinite-scroller::-webkit-scrollbar {
       width: 10px !important;
     }
 
-    ::-webkit-scrollbar-track {
-      background: var(--color-bg-secondary) !important;
-    }
-
-    ::-webkit-scrollbar-thumb {
-      background: var(--color-primary) !important;
-      border-radius: 5px !important;
-    }
-
-    ::-webkit-scrollbar-thumb:hover {
-      background: var(--color-primary-dark) !important;
+    infinite-scroller::-webkit-scrollbar-track {
+      background: transparent !important;
     }
 
     infinite-scroller::-webkit-scrollbar-thumb {
       background: transparent !important;
+      border-radius: 5px !important;
     }
 
     infinite-scroller:hover::-webkit-scrollbar-thumb {
