@@ -309,6 +309,9 @@
     }
 
     .actions-container-v2, .buttons-container-v2 {
+      opacity: 1 !important;
+      visibility: visible !important;
+      display: flex !important;
       background: transparent !important;
       margin: 12px 0 !important;
     }
