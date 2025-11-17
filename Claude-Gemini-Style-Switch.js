@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.9.6
-// @description  v1.9.6: 优化用户提问样式,统一字体和卡片风格
+// @version      1.9.7
+// @description  v1.9.7: 优化AI回复卡片内边距,提升内容可读性和视觉美感
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -89,7 +89,7 @@
     }
 
     .chat-history {
-      padding: 0 24px 0 24px !important;
+      padding: 0 24px 0 0 !important;
     }
 
     infinite-scroller {
@@ -165,7 +165,7 @@
       background: var(--color-card) !important;
       border: 1px solid var(--color-border) !important;
       border-radius: 16px !important;
-      padding: 20px !important;
+      padding: 28px 36px !important;
       box-shadow: 0 1px 3px var(--color-shadow) !important;
     }
 
@@ -184,10 +184,14 @@
       background: var(--color-card) !important;
       border: 1px solid var(--color-border) !important;
       border-radius: 16px !important;
-      padding: 20px !important;
+      padding: 28px 36px !important;
       margin: 0 !important;
       box-shadow: 0 1px 3px var(--color-shadow) !important;
       animation: fadeInUp 0.4s ease-out !important;
+    }
+
+    .markdown {
+      padding: 0 4px !important;
     }
 
     @keyframes fadeInUp {
