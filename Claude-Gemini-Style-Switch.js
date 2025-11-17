@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.9.2
-// @description  v1.9.2: 修复全局滚动条样式冲突,实现自动隐藏效果
+// @version      1.9.3
+// @description  v1.9.3: 修复右侧区域滚动响应范围问题,确保整个区域可滚动
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -87,15 +87,18 @@
       box-shadow: 0 1px 3px var(--color-shadow) !important;
     }
 
-    .chat-container, .chat-history {
-      max-width: 900px !important;
-      margin: 0 auto !important;
+    .chat-container {
       padding: 32px 24px !important;
     }
 
     .chat-history {
       padding: 0 !important;
       padding-right: 22px !important;
+    }
+
+    .conversation-container {
+      max-width: 900px !important;
+      margin: 0 auto !important;
     }
 
     conversations-list[data-test-id="all-conversations"] {
