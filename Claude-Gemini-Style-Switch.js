@@ -1,9 +1,8 @@
-
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.9.0
-// @description  v1.9.0: 优化回复卡片页脚容器样式和布局
+// @version      1.9.1
+// @description  v1.9.1: 修复正文卡片背景色与页面背景色相同的问题,恢复卡片视觉层次
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -28,7 +27,7 @@
       --color-fg-muted: #83827d !important;
       --color-border: #dad9d4 !important;
       --color-input: #b4b2a7 !important;
-      --color-card: #faf9f5 !important;
+      --color-card: #ffffff !important;
       --color-shadow: rgba(201, 100, 66, 0.1) !important;
       --color-shadow-md: rgba(201, 100, 66, 0.15) !important;
       --bard-sidenav-open-width: 280px;
@@ -47,7 +46,7 @@
         --color-fg-muted: #b7b5a9 !important;
         --color-border: #3e3e38 !important;
         --color-input: #52514a !important;
-        --color-card: #262624 !important;
+        --color-card: #2d2d2b !important;
         --color-shadow: rgba(217, 119, 87, 0.1) !important;
         --color-shadow-md: rgba(217, 119, 87, 0.15) !important;
         --scrollbar-thumb-hover: rgba(217, 119, 87, 0.6);
@@ -254,7 +253,7 @@
       border: 1px solid var(--color-border) !important;
       border-radius: 12px 12px 0 0 !important;
       padding: 16px !important;
-      margin: 20px 0 0 0 !important;
+      margin: 0 !important;
     }
 
     model-thoughts message-content,
