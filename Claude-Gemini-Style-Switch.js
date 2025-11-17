@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.9.3
-// @description  v1.9.3: 修复右侧区域滚动响应范围问题,确保整个区域可滚动
+// @version      1.9.4
+// @description  v1.9.4: 修复底部内容与输入框重叠问题,优化滚动条显示逻辑
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -31,8 +31,8 @@
       --color-shadow: rgba(201, 100, 66, 0.1) !important;
       --color-shadow-md: rgba(201, 100, 66, 0.15) !important;
       --bard-sidenav-open-width: 280px;
-      --scrollbar-thumb-hover: rgba(201, 100, 66, 0.6);
-      --scrollbar-thumb-active: rgba(201, 100, 66, 0.9);
+      --scrollbar-thumb: rgba(201, 100, 66, 0.4);
+      --scrollbar-thumb-hover: rgba(201, 100, 66, 0.7);
     }
 
     @media (prefers-color-scheme: dark) {
@@ -49,21 +49,18 @@
         --color-card: #2d2d2b !important;
         --color-shadow: rgba(217, 119, 87, 0.1) !important;
         --color-shadow-md: rgba(217, 119, 87, 0.15) !important;
-        --scrollbar-thumb-hover: rgba(217, 119, 87, 0.6);
-        --scrollbar-thumb-active: rgba(217, 119, 87, 0.9);
+        --scrollbar-thumb: rgba(217, 119, 87, 0.4);
+        --scrollbar-thumb-hover: rgba(217, 119, 87, 0.7);
       }
     }
 
-    .input-gradient,
-    input-container.input-gradient {
+    .input-gradient, input-container.input-gradient {
       background: transparent !important;
       background-image: none !important;
     }
 
-    .input-gradient::before,
-    .input-gradient::after,
-    input-container.input-gradient::before,
-    input-container.input-gradient::after {
+    .input-gradient::before, .input-gradient::after,
+    input-container.input-gradient::before, input-container.input-gradient::after {
       content: none !important;
       display: none !important;
     }
@@ -92,8 +89,11 @@
     }
 
     .chat-history {
-      padding: 0 !important;
-      padding-right: 22px !important;
+      padding: 0 24px 0 24px !important;
+    }
+
+    infinite-scroller {
+      padding-bottom: 140px !important;
     }
 
     .conversation-container {
@@ -247,8 +247,7 @@
       padding-top: 0 !important;
     }
 
-    model-thoughts,
-    .model-thoughts {
+    model-thoughts, .model-thoughts {
       display: block !important;
       width: 100% !important;
       box-sizing: border-box !important;
@@ -259,8 +258,7 @@
       margin: 0 !important;
     }
 
-    model-thoughts message-content,
-    model-thoughts .message-content {
+    model-thoughts message-content, model-thoughts .message-content {
       background: transparent !important;
       border: none !important;
       border-radius: 0 !important;
@@ -281,8 +279,7 @@
       margin: 0 !important;
     }
 
-    .actions-container-v2,
-    .buttons-container-v2 {
+    .actions-container-v2, .buttons-container-v2 {
       background: transparent !important;
       margin: 12px 0 !important;
     }
@@ -295,22 +292,17 @@
       display: none !important;
     }
 
-    message-actions button,
-    message-actions .mat-mdc-icon-button,
-    message-actions .mat-mdc-button {
+    message-actions button, message-actions .mat-mdc-icon-button, message-actions .mat-mdc-button {
       margin: 0 4px !important;
       border-radius: 8px !important;
       transition: all 0.2s ease !important;
     }
 
-    message-actions button:hover,
-    message-actions .mat-mdc-icon-button:hover,
-    message-actions .mat-mdc-button:hover {
+    message-actions button:hover, message-actions .mat-mdc-icon-button:hover, message-actions .mat-mdc-button:hover {
       background: var(--color-bg-tertiary) !important;
     }
 
-    code-block,
-    .code-block {
+    code-block, .code-block {
       display: block !important;
       background: var(--color-bg-secondary) !important;
       border: 1px solid var(--color-border) !important;
@@ -325,8 +317,7 @@
       border-bottom: 1px solid var(--color-border) !important;
     }
 
-    table-block,
-    .table-block {
+    table-block, .table-block {
       display: block !important;
       margin: 16px 0 !important;
     }
@@ -460,16 +451,12 @@
     }
 
     infinite-scroller::-webkit-scrollbar-thumb {
-      background: transparent !important;
+      background: var(--scrollbar-thumb) !important;
       border-radius: 5px !important;
     }
 
-    infinite-scroller:hover::-webkit-scrollbar-thumb {
-      background: var(--scrollbar-thumb-hover) !important;
-    }
-
     infinite-scroller::-webkit-scrollbar-thumb:hover {
-      background: var(--scrollbar-thumb-active) !important;
+      background: var(--scrollbar-thumb-hover) !important;
     }
 
     h1, h2, h3, h4, h5, h6, .user-greeting-text, .conversation-title, .gds-headline-l, .gds-headline-m, .gds-headline-s {
