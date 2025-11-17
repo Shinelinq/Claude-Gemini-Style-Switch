@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.9.4
-// @description  v1.9.4: 修复底部内容与输入框重叠问题,优化滚动条显示逻辑
+// @version      1.9.5
+// @description  v1.9.5: 增大正文字体至18px,优化行高以匹配Claude风格
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -374,7 +374,7 @@
 
     li {
       margin: 8px 0 !important;
-      line-height: 1.7 !important;
+      line-height: 1.75 !important;
     }
 
     ul li::marker, ol li::marker {
@@ -468,9 +468,9 @@
 
     body, p, div, span, .message-content, .ql-editor, .model-response-text, .gds-body-l, .gds-body-m {
       font-family: 'Inter', 'Helvetica Neue', Arial, sans-serif !important;
-      font-size: 16px !important;
+      font-size: 18px !important;
       font-weight: 400 !important;
-      line-height: 1.6 !important;
+      line-height: 1.75 !important;
     }
 
     code, pre, .code-block, .highlight, .ql-code-block, .ql-syntax {
