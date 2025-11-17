@@ -1,8 +1,8 @@
 // ==UserScript==
 // @name         Gemini 仿 Claude 风格转换插件
 // @namespace    https://github.com/XXX/
-// @version      1.9.7
-// @description  v1.9.7: 优化AI回复卡片内边距,提升内容可读性和视觉美感
+// @version      1.9.8
+// @description  v1.9.8: 修复mat-menu弹出菜单样式,统一Claude风格
 // @author       Claude Assistant
 // @match        https://gemini.google.com/*
 // @match        https://*.gemini.google.com/*
@@ -518,6 +518,60 @@
 
     bot-list, bot-list-item, .bots-list-container {
       background: var(--color-bg-secondary) !important;
+    }
+
+    .cdk-overlay-container {
+      z-index: 10000 !important;
+    }
+
+    .cdk-overlay-backdrop {
+      background: rgba(0, 0, 0, 0.3) !important;
+    }
+
+    .mat-mdc-menu-panel {
+      background: var(--color-card) !important;
+      border: 1px solid var(--color-border) !important;
+      border-radius: 12px !important;
+      box-shadow: 0 4px 16px var(--color-shadow-md) !important;
+      padding: 8px 0 !important;
+      min-width: 200px !important;
+    }
+
+    .mat-mdc-menu-content {
+      padding: 0 !important;
+    }
+
+    .mat-mdc-menu-item {
+      background: transparent !important;
+      color: var(--color-fg) !important;
+      padding: 12px 16px !important;
+      min-height: 48px !important;
+      transition: all 0.2s ease !important;
+      border-radius: 0 !important;
+    }
+
+    .mat-mdc-menu-item:hover,
+    .mat-mdc-menu-item-highlighted {
+      background: var(--color-bg-tertiary) !important;
+      color: var(--color-fg) !important;
+    }
+
+    .mat-mdc-menu-item .mat-icon {
+      color: var(--color-fg-muted) !important;
+      margin-right: 12px !important;
+    }
+
+    .mat-mdc-menu-item:hover .mat-icon,
+    .mat-mdc-menu-item-highlighted .mat-icon {
+      color: var(--color-primary) !important;
+    }
+
+    .mat-mdc-menu-submenu-icon {
+      fill: var(--color-fg-muted) !important;
+    }
+
+    .mat-mdc-menu-item:hover .mat-mdc-menu-submenu-icon {
+      fill: var(--color-primary) !important;
     }
   `;
 
