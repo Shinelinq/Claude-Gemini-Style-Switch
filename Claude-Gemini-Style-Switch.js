@@ -121,7 +121,7 @@
     .side-nav-action-button, .conversation, .nav-item {
       background: transparent !important;
       border-radius: 10px !important;
-      padding: 3px 31px 10px 12px !important;
+      padding: 10px 31px 10px 12px !important;
       margin: 4px 8px !important;
       transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
     }
